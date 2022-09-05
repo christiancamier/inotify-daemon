@@ -1,0 +1,79 @@
+.\"
+.\" Author: Christian CAMIER <christian.c@promethee.services>
+.\" Copyright (c) 2020 Christian CAMIER <christian.c@promethee.services>, Paris, France
+.\"                    All rights reserved
+.\"
+.\" As far as I am concerned, the code I have written for this software
+.\" can be used freely for any purpose.  Any derived versions of this
+.\" software must be clearly marked as such, and if the derived work is
+.\" incompatible with the protocol description in the RFC file, it must be
+.\" called by a name other than "ssh" or "Secure Shell".
+.\"
+.\" Copyright (c) 2020 Christian CAMIER.  All rights reserved.
+.\" Copyright (c) 2020 Promethée Services Campbell.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+.\" OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+.\" IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+.\" INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+.\" NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+.\" DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+.\" THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+.\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\"
+.TH INOTIFY-DAEMON.CONF 5 Jully 06 2020 "Linux Administrator's Manual"
+.SH NAME
+.B inotify-daemon.conf
+\- inotify-daemon configuration file
+.SH DESCRITION
+.SS Global view
+.BR inotify-daemon (8)
+reads configuration data from
+.I %PREFIX%/etc/inotify-daemon.conf
+(or the file specified with
+.B -C
+on the command line).
+.PP
+Blank lines, composed only of white characters or whose first non-white
+character is a sharp (
+.B #
+) are ignored.
+.PP
+The keywords are case insensitive.
+.PP
+The file consists of several sections. A section starts with a line starting
+with the keyword
+.B settings
+or the keyword
+.B directory
+and ends with a line containing only the keyword
+.B end
+\.
+.PP
+The different types of section are:
+.IP
+The
+.B settings
+section defines the overall behavior of the daemon.
+.IP
+The
+.B directory
+sections indicate the actions to be performed when events occurring on a directory.
+.SS The 'settings' section
+This section defines the general behavior of inotify-daemon.
+This section determines the
+.I pidfile
+and
+.I logging
+.SS the 'directory' sections

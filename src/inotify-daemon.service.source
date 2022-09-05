@@ -1,0 +1,22 @@
+[Unit]
+Description=Inotify daemon
+Documentation=man:inotify-daemon(8)
+After=network.target auditd.service
+ConditionPathExists=${prefix}/etc/inotify-daemon.conf
+
+[Service]
+EnvironmentFile=-${prefix}/etc/default/inotify-daemon
+ExecStartPre=${prefix}/usr/sbin/inotify-daemon -T
+ExecStart=${prefix}/usr/sbin/inotify-daemon
+ExecReload=${prefix}/usr/sbin/inotify-daemon -T
+ExecReload=${prefix}/usr/sbin/inotify-daemon -R
+ExecStop=${prefix}/usr/sbin/inotify-daemon -S
+Restart=on-failure
+RestartPreventExitStatus=255
+Type=oneshot
+RemainAfterExit=yes
+RuntimeDirectory=inotify-daemon
+RuntimeDirectoryMode=0755
+
+[Install]
+WantedBy=multi-user.target

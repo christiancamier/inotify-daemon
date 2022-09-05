@@ -1,0 +1,378 @@
+\input texinfo    @c -*-texinfo-*-
+@c %**start of header
+@setfilename inotify-daemon.info
+@settitle Inotify-daemon User's Manual
+@include version.texi
+@paragraphindent 2
+@c %**end of header
+
+@ifinfo
+This file documents the use of inotify-daemon, a service for
+managing filesystems events on defined directories.
+@end ifinfo
+
+@ifnottex @c texi2pdf don't understand copying and insertcopying ???
+@c modifications must also be done in the titlepage
+@copying
+Copyright @copyright{} 2022 Promethee Services
+Copyright @copyright{} 2022 Christian CAMIER <christian.c@@promethee.services>
+
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+@end copying
+@c WTF does the info get the copying output and the plaintext output not ????
+@ifplaintext
+@insertcopying
+@end ifplaintext
+@end ifnottex
+
+@dircategory System administration
+@direntry
+* inotify-daemon: (inotify-daemon).     Filesystems events management
+@end direntry
+
+@titlepage
+@title Inotify-daemon User Manual
+@subtitle Inotify-daemon, version @value{VERSION}, @value{UPDATED}
+@author Christian CAMIER @email{christian.c@@promethee.services}
+
+@c @page
+@c @vskip 0pt plus 1filll
+
+@c modifications must also be done in the copying block
+Copyright @copyright{} 2022 Christian CAMIER <christian.c@@promethee.services>
+
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+@end titlepage
+
+@ifnottex
+@node Top
+@top Inotify-daemon User Manual
+
+@c WTF doesn't texi2html include the titlepage?
+@ifhtml
+@insertcopying
+@end ifhtml
+
+This file documents the use of Inotify-daemon, a program managing filesystems
+events on given directories.
+
+This document applies roughly to version @strong{@value{VERSION}} of Inotify-daemon.
+@end ifnottex
+
+@shortcontents
+
+@menu
+* Introduction::                Introduction
+* Invoking inotify-daemon::     How to run ``inotify-daemon'''
+* Configure inotify-daemon::    Configure inotify-daemon
+@end menu
+
+@node Introduction
+@chapter Introduction
+@cindex description of inotify-daemon
+
+@section Description
+Inotify-daemon is a daemon that allows, on given directories, to initiate actions when
+some file system events occur. Inotify-daemon is a service that
+allows, on given directories, to initiate an action when certain
+events of the file system occur.
+
+@node Invoking inotify-daemon
+@chapter How to run ``inotify-daemon''
+@section Precedence of online arguments over configuration
+When Inotify-daemon is invoked, the command line arguments take precedence over the
+corresponding instructions given in the configuration file.
+@section Command line options
+@subsection Formats of online options
+@subsubsection Short and Long Options
+@strong{Inotify-daemon} offers two styles of options:
+@itemize @bullet
+@item
+Short options, preceded by a single minus sign (@strong{-}), composed
+of a single character.
+@item
+Long options, preceded by two minus (@strong{-}) signs and composed of
+several characters to be more eloquent.
+@end itemize
+@subsubsection Short options
+Options requiring an argument, the latter is placed in the argument
+that follows the option.@*
+Example:
+@quotation
+@code{inotify-daemon -C /home/foo/myconfiguration.cfg}
+@end quotation
+@*
+Several options can be accumulated on the m eme argument of the online command. Thus,
+the following two forms are equivalent:
+@quotation
+@code{inotify-daemon -f -T}@*
+@code{inotify -fT}
+@end quotation
+@*
+When multiple options are combined and some of them require an argument,
+the following command line arguments, in the order in which the
+options appear, will be used. The following two forms are therefore
+equivalent:
+@quotation
+@code{inotify-daemon -CfLl /tmp/foo.cfg syslog info}@*
+@code{inotify-daemon -C /tmp/foo.cfg -f -L syslog -l info}
+@end quotation
+@subsubsection Long options
+Long options, unlike short options, cannot be accumulated.
+If an option requires an argument, the argument is joined after the
+option, in the same argument of the line command, separated by an
+equal sign (@strong{=}).@*
+Example:
+@quotation
+@code{inotify-daemon --configuration=/home/foo/myconfiguration.cfg}
+@end quotation
+@subsection The options
+@multitable @columnfractions .10 .25 .65
+@headitem short @tab long @tab Description
+@item @strong{C} fil @tab @strong{configuration}=fil
+@tab Defines the file to be taken into account when dismounting.
+The argument is the path to the desired configuration file.
+The defaault value is @strong{${sysconfdir}/inotify-daemon.conf}.
+@item @strong{f} @tab @strong{foreground}
+@tab xecution in foreground. Useful for debugging.
+@item @strong{h} @tab @strong{help}
+@tab Displays a short help of inotify-daemon.
+@item @strong{L} drv @tab @strong{logdriver}=drv
+@tab Defines the driver to be used for recording execution traces. For
+more information, see ``Log management''.
+@item @strong{l} lvl @tab @strong{loglevel}=lvl
+@tab Defines the minimum trace level to be recorded in the system
+logs.For more information, see ``Log management''.
+@item @strong{o} o=v @tab @strong{logoption}=o=v
+@tab Set a logging system option. For
+more information, see ``Log management''.
+@item @strong{p} fil @tab @strong{pidfile}=fil
+@tab Path to the PID file.@*
+Specify the name and path of the file used to record the
+@strong{inotify-daemon}'s process ID.
+@item @strong{R} @tab @strong{reload}
+@tab Ask the running demon to reread his configuration file.
+@item @strong{S} @tab @strong{stop}
+@tab Ask the running daemon to stop.
+@item @strong{T} @tab @strong{test}
+@tab COnfiguration test
+@item @strong{V} @tab @strong{version}
+@tab Prints the @strong{inotify-daemon} version number and exits.
+@end multitable
+
+@node Configure inotify-daemon
+@chapter Configure inotify-daemon
+@section The configuration file
+@subsection Presentation
+All @strong{inotify-daemon} behaviors are defined in a configuration
+file.@*
+By default, the configuration file used is @strong{${prefix}/etc/inotify-daemon.conf}.
+@subsection Structure of the configuration file
+The configuration file is a text file (ASCII). Blank lines (or filled
+only with white characters) and lines whose first non-white character
+is a hash (#) are ignored.@*
+Directives are case insensitive.@*
+Each line is composed of a directive, that is, a keyword followed by
+possible arguments.@*
+Some of these directives are sections (groups of directives).
+Arguments are separated by one or more spaces and/or tabs.
+A section begins with a line containing a section directive and ends
+with a line containing only the end keyword. Sections can be nested.@*
+Simple section sample :
+@multitable @columnfractions .2 .8
+@item
+@tab
+@code{@strong{directory} /var/lib/input}
+@quotation
+@code{@strong{event} close_write new_file.sh %D %F}@*
+@code{... }
+@end quotation
+@code{@strong{end}}
+@end multitable
+@*
+Nested sections exemple :
+@multitable @columnfractions .2 .8
+@item
+@tab
+@code{@strong{settings} /tmp}
+@quotation
+@code{... }@*
+@code{@strong{logging} file}
+@quotation
+@code{@strong{set} filename /var/log/ind.log}@*
+@code{...}
+@end quotation
+@code{@strong{end}}
+@end quotation
+@code{@strong{end}}
+@end multitable
+@*
+The higher level directives are:
+@multitable @columnfractions .10 .90
+@c @multitable {directory} {description description description description description description description}
+@item @strong{settings} @tab
+Single directive, normally not in the configuration file, initiating a
+section to define the global behavior of @strong{inotify-daemon}.
+@item @strong{directory} @tab
+Directive to define a section to define, for a directory
+given, the actions to be performed on the reception of defined
+events.
+@item @strong{include} @tab
+Directive to include files containing bits of configurations.
+@end multitable
+@subsection The arguments of the directives
+@subsubsection The different types of arguments
+Some directives take arguments with specific semantics.@*
+These types of arguments are:
+@itemize @bullet
+@item Booleans
+@item Entiers
+@item Predefined values
+@item Combinations of predefined values
+@end itemize
+@subsubsection The booleans
+The arguments of type booleens, used as switches. The possible values
+are true and false.@*
+To designate these values in the configuration file, the possibilities
+are as follows:
+@multitable @columnfractions .02 .18 .80
+@item @tab true  @tab @strong{on} @strong{true} @strong{yes}
+@item @tab false @tab @strong{off} @strong{false} @strong{no}
+@end multitable
+@subsection The integers
+Some directives require that one or more of its arguments be a
+positive integer value. These values can be in octal, decimal, or
+hexadecimal. If the given value starts with a zero (0), the value will
+be considered octal. If the given value starts with 0x, the value will
+be considered hexadecimal. Any other value will be considered
+decimal.@*
+Example, for value (10)@sub{d}, the possibilities are as follows:
+@multitable @columnfractions .02 .18 .80
+@item @tab decimal @tab @strong{10}
+@item @tab octal @tab @strong{012}
+@item @tab hexadecimal @tab @strong{0xA} ou @strong{0xa}
+@end multitable
+@subsubsection Predefined values
+Some directives require that one or more of its arguments be chosen
+from among values predefined. In this case, see the documetation of
+the directive to know the possibilities.
+@subsubsection Combinations of predefined values
+Some directives that require that one or more of its arguments be
+chosen from among values predefined accepts combinations of these
+values. In this case, the different values are placed one after the
+other, separated by a comma (@strong{,}) or by a vertical bar
+(@strong{|}) without spaces or tabs.
+Example in the case of the ``event'' directive:
+@quotation
+@code{event close_write@strong{,}close_nowrite action}@*
+@code{event close_write@strong{|}close_nowrite action}@*
+@end quotation
+@section The ``settings'' directive
+@subsection Presentation
+This directive indicates the beginning of the section in which the
+overall behaviours (excluding management of events on directories) are
+defined.@*
+This directive does not take arguments.
+@subsection The sub-directives of ``Settings''
+The sub-directives in the settings section are:
+@multitable @columnfractions .10 .90
+@item @strong{pidfile} @tab
+Specify the name and path of the file used to record the
+@strong{inotify-daemon}'s process ID..@*
+@item @strong{logging} @tab
+Indicates the beginning of the subsection in which records are defined in the
+system logs.
+@end multitable
+@subsection The ``pidfile'' directive
+This directive takes, as a single argument, the absolute path of the file that should contain
+the process identifier (PID) when the daemon is running.@*
+The default is @code{/var/run/inotify-daemon.pid}
+@subsection The ``logging'' directive
+@subsubsection Forword
+This section only documents the guidelines. For more details on log
+management see
+@c @xref{Log management,,Log management}.
+@subsubsection Presentation
+This directive defines a section in which it is indicated how
+inotify-daemon records application traces.@*
+This dirrective takes, as argument, the driver to use to record
+logs.@*
+In the @strong{logging} section the following guidelines are accepted:
+@multitable @columnfractions .10 .90
+@item @strong{level} @tab
+Defines the level at which traces are recorded.
+@item @strong{set} @tab
+Sets an option for logging traces.
+@end multitable
+@subsubsection The ``level'' directive
+This directive takes, as argument, the minimum level of application
+traces that will be recorded.@*
+The possible levels are:
+@itemize @bullet
+@item @strong{ALERT}
+@item @strong{CRIT}
+@item @strong{DEBUG}
+@item @strong{EMERG}
+@item @strong{ERROR}
+@item @strong{INFO}
+@item @strong{NOTICE}
+@item @strong{WARNING}
+@end itemize
+@*
+Exemple :
+@quotation
+@code{@strong{level} notice}
+@end quotation
+@*
+Note
+@quotation
+If this directive is used several times, it is the last instance which
+imposes the minimum level.
+@end quotation
+@subsubsection The ``set'' directive
+This directive sets an option for the trace logging system.@*
+It takes two arguments:
+@multitable @columnfractions .10 .90
+@item @strong{option}
+@tab The option name.
+@item @strong{value}
+@tab The option value.
+@end multitable
+@*
+Exemple (case logging to file):
+@quotation
+@code{@strong{set} filename /var/log/inotify-daemon}.log@*
+@code{@strong{set} stayopen off}
+@end quotation
+@*
+Exemple (case logging using syslog):
+@quotation
+@code{@strong{set} facility daemon}@*
+@code{@strong{set} ident toto}@*
+@code{@strong{set} options ndelay|perror|pid}
+@end quotation
+@section The ``directory'' directive
+@subsection Presentation ********
+@subsection Syntax **********
+@subsection ``user''
+@bye

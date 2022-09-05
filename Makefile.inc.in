@@ -1,0 +1,209 @@
+#
+# Copyright (c) 2022
+#      Christian CAMIER <chcamier@free.fr>
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+
+#
+# Target directories definitions
+#
+#!START
+PACKAGE_TARNAME ?= inotify-daemon
+
+PREFIX        ?= @prefix@
+prefix        ?= @prefix@
+exec_prefix   ?= @exec_prefix@
+bindir        ?= @bindir@
+sbindir       ?= @sbindir@
+sysconfdir    ?= @sysconfdir@
+sbindir       ?= @sbindir@
+includedir    ?= @includedir@
+oldincludedir ?= @oldincludedir@
+libdir        ?= @libdir@
+libexecdir    ?= @libexecdir@
+datarootdir   ?= @datarootdir@
+mandir        ?= @mandir@
+man1dir       ?= $(mandir)/man1
+man2dir       ?= $(mandir)/man2
+man3dir       ?= $(mandir)/man3
+man4dir       ?= $(mandir)/man4
+man5dir       ?= $(mandir)/man5
+man6dir       ?= $(mandir)/man6
+man7dir       ?= $(mandir)/man7
+man8dir       ?= $(mandir)/man8
+man9dir       ?= $(mandir)/man9
+docdir        ?= @docdir@
+infodir       ?= @infodir@
+localstatedir ?= @localstatedir@
+localedir     ?= @localedir@
+htmldir       ?= @htmldir@
+dvidir        ?= @dvidir@
+pdfdir        ?= @pdfdir@
+psdir         ?= @psdir@
+#!END
+
+MAKE    ?= make
+SUBMAKE  = $(MAKE) -f Makefile
+
+INSTALL      = install
+INSTALL_BIN  = $(INSTALL) -o bin  -g bin  -m 755 -t $(bindir)
+INSTALL_DOC  = $(INSTALL) -o root -g root -m 644 -t $(docdir)
+INSTALL_INC  = $(INSTALL) -o bin  -g bin  -m 644 -t $(incdir)
+INSTALL_LIB  = $(INSTALL) -o bin  -g bin  -m 644 -t $(libdir)
+INSTALL_MAN1 = $(INSTALL) -o bin  -g bin  -m 644 -t $(man1dir)
+INSTALL_MAN2 = $(INSTALL) -o bin  -g bin  -m 644 -t $(man2dir)
+INSTALL_MAN3 = $(INSTALL) -o bin  -g bin  -m 644 -t $(man3dir)
+INSTALL_MAN4 = $(INSTALL) -o bin  -g bin  -m 644 -t $(man4dir)
+INSTALL_MAN5 = $(INSTALL) -o bin  -g bin  -m 644 -t $(man5dir)
+INSTALL_MAN6 = $(INSTALL) -o bin  -g bin  -m 644 -t $(man6dir)
+INSTALL_MAN7 = $(INSTALL) -o bin  -g bin  -m 644 -t $(man7dir)
+INSTALL_MAN8 = $(INSTALL) -o bin  -g bin  -m 644 -t $(man8dir)
+INSTALL_MAN9 = $(INSTALL) -o bin  -g bin  -m 644 -t $(man9dir)
+INSTALL_SBIN = $(INSTALL) -o root -g root -m 755 -t $(sbindir)
+
+#
+# Compilation rules
+#
+
+.DEFAULT_GOAL := all
+
+.SUFFIXES: .c .o .i .sh .po
+
+.c.o:
+	$(CC) $(CFLAGS) -c $<
+
+.c.po:
+	$(CC) -fPIC $(CFLAGS) -c -o $@ $<
+
+.c.i:
+	$(CC) $(CFLAGS) -E $< > $@
+
+.sh:
+	cp $< $@
+
+.py:
+	cp $< $@
+
+install.bin: $(EXECS)
+	mkdir -m 755 -p $(bindir)
+	for EXE in $(BINS);		\
+	do				\
+	  $(INSTALL_BIN) $$EXE;		\
+	done
+
+install.doc: $(DOCS)
+	mkdir -m 755 -p $(docdir)
+	for DOC in $(DOCS);		\
+	do				\
+	  $(INSTALL_DOC) $$DOC;		\
+	done
+
+install.inc: $(CINCS)
+	mkdir -m 755 -p $(incdir)
+	for INC in $(CINCS);		\
+	do				\
+	  $(INSTALL_INC) $$INC;		\
+	done
+
+install.lib: $(LIBS)
+	mkdir -m 755 -p $(libdir)
+	for LIB in $(LIBS);		\
+	do				\
+	  $(INSTALL_LIB) $$LIB;		\
+	done
+
+install.man1: $(MAN1S)
+	mkdir -m 755 -p $(man1dir)
+	for MAN in $(MAN1S);		\
+	do				\
+	  $(INSTALL_MAN1) $$MAN;	\
+	  gzip -f9 $(man1dir)/$$MAN;	\
+	done
+
+install.man2: $(MAN2S)
+	mkdir -m 755 -p $(man2dir)
+	for MAN in $(MAN2S);		\
+	do				\
+	  $(INSTALL_MAN2) $$MAN;	\
+	  gzip -f9 $(man2dir)/$$MAN;	\
+	done
+
+install.man3: $(MAN3S)
+	mkdir -m 755 -p $(man3dir)
+	for MAN in $(MAN3S);		\
+	do				\
+	  $(INSTALL_MAN3) $$MAN;	\
+	  gzip -f9 $(man3dir)/$$MAN;	\
+	done
+
+install.man4: $(MAN4S)
+	mkdir -m 755 -p $(man4dir)
+	for MAN in $(MAN4S);		\
+	do				\
+	  $(INSTALL_MAN4) $$MAN;	\
+	  gzip -f9 $(man4dir)/$$MAN;	\
+	done
+
+install.man5: $(MAN5S)
+	mkdir -m 755 -p $(man5dir)
+	for MAN in $(MAN5S);		\
+	do				\
+	  $(INSTALL_MAN5) $$MAN;	\
+	  gzip -f9 $(man5dir)/$$MAN;	\
+	done
+
+install.man6: $(MAN6S)
+	mkdir -m 755 -p $(man6dir)
+	for MAN in $(MAN6S);		\
+	do				\
+	  $(INSTALL_MAN6) $$MAN;	\
+	  gzip -f9 $(man6dir)/$$MAN;	\
+	done
+
+install.man7: $(MAN7S)
+	mkdir -m 755 -p $(man7dir)
+	for MAN in $(MAN7S);		\
+	do				\
+	  $(INSTALL_MAN7) $$MAN;	\
+	  gzip -f9 $(man7dir)/$$MAN;	\
+	done
+
+install.man8: $(MAN8S)
+	mkdir -m 755 -p $(man8dir)
+	for MAN in $(MAN8S);		\
+	do				\
+	  $(INSTALL_MAN8) $$MAN;	\
+	  gzip -f9 $(man8dir)/$$MAN;	\
+	done
+
+install.man9: $(MAN9S)
+	mkdir -m 755 -p $(man9dir)
+	for MAN in $(MAN9S);		\
+	do				\
+	  $(INSTALL_MAN9) $$MAN;	\
+	  gzip -f9 $(man9dir)/$$MAN;	\
+	done
+
+install.sbin: $(SBINS)
+	mkdir -m 755 -p $(sbindir)
+	for EXE in $(SBINS);		\
+	do				\
+	  $(INSTALL_SBIN) $$EXE;	\
+	done
+
+install.top: $(TOPFILES)
+	for TOPF in $(TOPFILES);	\
+	do				\
+	  $(INSTALL_TOP) $$TOPF;	\
+	done

@@ -1,0 +1,6 @@
+@set UPDATED ${updated}
+@set UPDATED-MONTH ${updated_month}
+@set EDITION ${edition}
+@set VERSION ${version_major}.${version_minor}.${version_revision}
+
+

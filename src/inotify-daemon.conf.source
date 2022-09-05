@@ -1,0 +1,59 @@
+# INOTIFY-DAEMON configuration file
+
+#
+# Settings section
+#
+# Keywords :
+# 
+settings
+  #
+  # Logging options
+  #
+  # Syslog
+  # logging syslog
+  #   set facility user
+  #   set options ndelay|pid
+  # end
+  # File
+  logging file
+     set filename /var/log/inotify_daemon.log
+     set mode 0600
+     set stayopen off
+  end
+
+  pidfile /var/run/inotify_daemon.pid
+end
+
+#
+# %D    : Directory name
+# %E    : Event Name
+# %e[m] : Event Mask (32 bits integer)
+# %c[m] : cookie     (32 bits integer)
+# %F    : Filename
+#
+# 32 mits integers modifiers (m) :
+# none : decimal
+#    b : binary, 0 filled 32 bits alligned (32 characters)
+#    d : decimal
+#    o : octal, 0 filled 32 bits alligned (11 characters)
+#    x : lower case hexadecimal, 0 filled, 32 bits alligned (8 characters)
+#    X : upper case hexadecimal, 0 filled, 32 bits alligned (8 characters)
+#
+
+directory /tmp
+  user  uucp
+  group users
+  event access		     ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F turlututu chapeau pointu
+  event attrib               ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F turlututu chapeau pointu
+  event close_write          ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F
+  event close_nowrite        ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F
+  event create               ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F
+  event delete|delete_self   ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F
+  event modify               ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F
+  #event rename	             ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %cb %cd %co %cx %cX %F %O
+  event rename	             ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %cb %cd %co %cx %cX "'%O' renamed '%F'"
+  event move_self            ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F
+  event open                 ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F
+end
+
+include ${prefix}/etc/inotify-daemon.d/*.conf

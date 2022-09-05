@@ -1,0 +1,30 @@
+#!/bin/bash
+
+: ${JUST_STARTED:=true}
+
+PK_ARCH=$(arch)
+MY_DIRE=$(cd $(dirname $0); pwd -P)
+MY_NAME=$(basename $0 .sh)
+
+function execute {
+    "$@" && return 0
+    exec 2>&1
+    echo "Error while executing ${MY_NAME} $@"
+    exit 1
+}
+
+execute cd ${MY_DIRE}
+
+if ${JUST_STARTED}
+then
+	export JUST_STARTED=false
+	execute script -c "bash $0" ${MY_DIRE}/$${MY_NAME}.log
+fi
+
+if   [ -f Makefile ]
+then execute make distclean
+fi
+
+execute ./configure --prefix= --exec-prefix=/usr --datarootdir=/usr/share
+execute make all
+execute mkdir package

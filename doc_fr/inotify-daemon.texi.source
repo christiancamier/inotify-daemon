@@ -1,0 +1,878 @@
+\input texinfo    @c -*-texinfo-*-
+@afourpaper
+@c %**start of header
+@setfilename inotify-daemon.info
+@settitle Inotify-daemon User's Manual
+@include version.texi
+@paragraphindent 2
+@c %**end of header
+
+@ifinfo
+Ce fichier documente l'utilisation de inotify-d aemon, un service qui
+gere les @'ev@'enements du système de fichiers sur des r@'epertoires
+d@'efinis.
+@end ifinfo
+
+@ifnottex @c texi2pdf don't understand copying and insertcopying ???
+@c modifications must also be done in the titlepage
+@copying
+Copyright @copyright{} 2022 Promethee Services
+Copyright @copyright{} 2022 Christian CAMIER <christian.c@@promethee.services>
+
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+@end copying
+@c WTF does the info get the copying output and the plaintext output not ????
+@ifplaintext
+@insertcopying
+@end ifplaintext
+@end ifnottex
+
+@dircategory System administration
+@direntry
+* inotify-daemon: (inotify-daemon).     Gestion des @'ev@'enements du
+  syst@`eme de fichiers.
+@end direntry
+
+@titlepage
+@title Manuel de l'utilisateur Inotify-daemon
+@subtitle Inotify-daemon, version @value{VERSION}, @value{UPDATED}
+@author Christian CAMIER @email{christian.c@@promethee.services}
+
+
+@c @page
+@c @vskip 0pt plus 1filll
+
+@c modifications must also be done in the copying block
+Copyright @copyright{} 2022 Promethee Services
+Copyright @copyright{} 2022 Christian CAMIER <christian.c@@promethee.services>
+
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+@end titlepage
+
+@ifnottex
+@node Top
+@top Inotify-daemon User Manual
+
+@c WTF doesn't texi2html include the titlepage?
+@ifhtml
+@insertcopying
+@end ifhtml
+
+Ce fichier documente l'utilisation de inotify-daemon, un d@'emon qui
+gere les @'ev@'enements du système de fichiers sur des r@'epertoires
+d@'efinis.
+
+Ce document s'applique @`a la version @strong{@value{VERSION}} d'Inotify-daemon.
+@end ifnottex
+
+@shortcontents
+
+@menu
+* Introduction::                Introduction
+* Lancer inotify-daemon::       Comment lancer inotify-daemon
+* Configurer inotify-daemon::   Configuration d'inotify-daemon
+* Gestion des logs::            Gestion des journaux syst@`emes (logs)
+@end menu
+
+@node Introduction
+@chapter Introduction
+@cindex description d'inotify-daemon
+
+@section Description
+Inotify-daemon est un d@'emon qui permet, sur des r@'epertoires
+donn@'es, d'initier des actions lorsque certains @'ev@'enements
+du syst@`eme de fichiers surviennent.
+
+@node Lancer inotify-daemon
+@chapter Lancer inotify-daemon
+
+@section Pr@'es@'eance des arguments en ligne sur la configuration
+Lorsque Inotify-daemon est invoqu@'e, les arguments en ligne de commande
+ont priorit@'e sur les directives correspondantes donn@'es dans le
+fichier de configuration.
+
+@section Options en lignes
+
+@subsection Les formats des options en ligne
+
+@subsubsection Options courtes et options longues
+@strong{Inotify-daemon} propose deux styles d'options :
+@itemize @bullet
+@item
+Les options courtes, pr@'ec@'ed@'ees par un unique signe moins
+(@strong{-}), compos@'ees d'un unique caract@`ere.
+@item
+Les options longues, pr@'ec@'ed@'ees par deux signe moins (@strong{-})
+et compos@'ees de plusieurs caract@`eres pour @^etre plus parlantes.
+@end itemize
+
+@subsubsection Les options courtes
+Les options n@'ecessitant un argument, ce dernier est plac@'e dans
+l'argument qui suit l'option.@*
+Exemple :
+@quotation
+@code{inotify-daemon -C /home/foo/myconfiguration.cfg}
+@end quotation
+@*
+Plusieurs options peuvent @^etre cumul@'ees sur le m@^eme argument de
+la commande en ligne. Ainsi, les deux formes suivantes sont
+@'equivalentes :
+@quotation
+@code{inotify-daemon -f -T}@*
+@code{inotify -fT}
+@end quotation
+@*
+Lorsque plusieurs options sont cumul@'ees et que certaines d'entre
+elles n@'ecessite un argument, les arguments de la ligne de commande
+suivants, dans l'ordre d'apparition des options seront
+utilis@'ees. Les deux formes suivantes sont donc @'equivalentes :
+@quotation
+@code{inotify-daemon -CfLl /tmp/foo.cfg syslog info}@*
+@code{inotify-daemon -C /tmp/foo.cfg -f -L syslog -l info}
+@end quotation
+@subsubsection Les options longues
+Les options longues, contrairement aux options courtes, ne peuvent pas
+@^etre cumul@'es.@*
+Si une option n@'ec@'ecite un argument, l'argument est accolé à la
+suite de l'option, dans le m@^eme argument de la commande en ligne,
+s@'epar@'e par un signe @'egal (@strong{=}).@*
+Exemple :
+@quotation
+@code{inotify-daemon --configuration=/home/foo/myconfiguration.cfg}
+@end quotation
+@page
+@subsection les options
+Les options prises en compte par @strong{inotify-daemon} sont les
+suivantes :
+@multitable @columnfractions .10 .25 .65
+@headitem court @tab long @tab Description
+@item @strong{C} fic @tab @strong{configuration}=fic
+@tab D@'efini le fichier devant @^etre pris en compte au
+d@'em@'erage. L'argument est le chemin d'acc@`es au fichier de
+configuration d@'esir@'e.@*
+La valeur par d@'efaut est @strong{${sysconfdir}/inotify-daemon.conf}.
+@item @strong{f} @tab @strong{foreground}
+@tab Ex@'ecution en avant plan. Util pour de d@'ebogage.
+@item @strong{h} @tab @strong{help}
+@tab Affiche une aide succinte de @strong{inotify-daemon}.
+@item @strong{L} drv @tab @strong{logdriver}=drv
+@tab D@'efini le pilote devant @^etre utilis@'e pour la consignation
+des traces d'ex@'ecution. Pour plus d'information, voir la partie
+``Gestion des journaux syst@`emes(logs)''.
+@item @strong{l} lvl @tab @strong{loglevel}=lvl
+@tab D@'efini le niveau de trace minimal @`a consigner dans les
+journaux syst@`emes.Pour plus d'information, voir la partie
+``Gestion des journaux syst@`emes(logs)''.
+@item @strong{o} o=v @tab @strong{logoption}=o=v
+@tab D@'efini une option du syst@'eme de journalisation.Pour plus
+d'information, voir la partie ``Gestion des journaux
+syst@`emes(logs)''.
+@item @strong{p} fil @tab @strong{pidfile}=fil
+@tab D@'efini le fichier @`a utiliser pour stocker l'identifiant du
+processus (pid) du deamon en cours d'ex@'ecution.
+@item @strong{R} @tab @strong{reload}
+@tab Demande, au d@'emon en cours d'ex@'ecution de relire sa
+configuration.
+@item @strong{S} @tab @strong{stop}
+@tab Demande, au d@'emon en cours d'ex@'ecution de s'arr@^eter.
+@item @strong{T} @tab @strong{test}
+@tab Test de la configuration
+@item @strong{V} @tab @strong{version}
+@tab Affiche la version du programme.
+@end multitable
+
+@node Configurer inotify-daemon
+@chapter Configuration d'inotify-daemon
+
+@section Le fichier de configuration
+@subsection Pr@'esentation
+L'ensemble des comportements de @strong{inotify-daemon} sont d@'efinis
+dans un fichier de configuration. Par d@'efaut, le fichier de
+configuration utilis@'e est
+@strong{${prefix}/etc/inotify-daemon.conf}.
+@subsection Structure du fichier de configuration
+Le fichier de configuration est un fichier texte (ASCII). Les lignes
+vides (ou remplies uniquement de caract@`eres blancs) et le lignes
+dont le premier caract@`ere non blanc est un di@`ese (@strong{#}).@*
+Pour ce qui est des directives, ces derni@`eres sont insensibles @`a
+la casse.@*
+Chaque ligne est compos@'ee d'une directive, c'est @`a dire, un mot
+cl@'e suivit d'@'eventuels arguments. Certaines de ces directives sont
+des sections (groupes de directives).@*
+Les arguments sont s@'epar@'es par un ou plusieurs espaces et/ou
+tabulations.@*
+Une section commence par une ligne contenant une directive de section
+et se termine une ligne ne contenant que le mot cl@'e
+@strong{end}. Les sections peuvent @^etre imbriqu@'ees.@*
+@*
+Exemples de section simple : @*
+@multitable @columnfractions .2 .8
+@item
+@tab
+@code{@strong{directory} /var/lib/input}
+@quotation
+@code{@strong{event} close_write fichier_recu.sh %D %F}@*
+@code{... }
+@end quotation
+@code{@strong{end}}
+@end multitable
+@*
+Exemple de sections imbriqu@'ees :@*
+@multitable @columnfractions .2 .8
+@item
+@tab
+@code{@strong{settings}}
+@quotation
+@code{... }@*
+@code{@strong{logging} file}
+@quotation
+@code{@strong{set} filename /var/log/ind.log}@*
+@code{...}
+@end quotation
+@code{@strong{end}}
+@end quotation
+@code{@strong{end}}
+@end multitable
+@*
+Les directives de plus haut niveau sont les suivantes :
+@multitable @columnfractions .10 .90
+@item @strong{settings} @tab
+Directive unique, normalement en ent@^ete du fichier de configuration,
+initiant une section permettant de d@'efinir les comportements globaux
+d'@strong{inotify-daemon}.
+@item @strong{directory} @tab
+Directive permettant de d@'efinir une section permettant de d@'efinir,
+pour un r@'epertoire donn@'e, les actions @'a effectuer sur la
+r@'eception d'@'ev@'enements d@'efinis.
+@item @strong{include} @tab
+Directive permettant d'inclure des fichiers contenant des bouts de configurations.
+@end multitable
+@page
+@subsection Les arguments des directives
+@subsubsection Les diff@'erents types d'arguments
+Certaines directives prennent des arguments ayant une s@'emantique
+sp@'ecifique. Ces types d'arguments sont les suivants :
+@itemize @bullet
+@item Les booleens
+@item Les entiers
+@item Les valeurs pr@'ed@'efinies
+@item Les combinaisons de valeurs pr@'ed@'efinies
+@end itemize
+@subsubsection Les arguments booleens
+Lea arguments de type booleens, utilis@'es commes des
+interrupteurs. Les valeurs possibles sont @strong{vrai} et
+@strong{faux}.@*
+Pour d@'esigner ces valeurs dans le fichier de configuration, les
+possibilit@'es sont les suivantes :
+@multitable @columnfractions .02 .18 .80
+@item @tab pour vrai @tab @strong{on} @strong{true} @strong{yes}
+@item @tab pour faux @tab @strong{off} @strong{false} @strong{no}
+@end multitable
+@subsubsection Les arguments entiers
+Certaines directive exigent qu'un ou plusieurs de ses arguments soit
+une valeur enti@`ere positive. Ces valeurs peuvent @^etre en
+octal, d@'ecimal, ou hexad@'ecimal.@*
+Si la valeur indiqu@'ee commence par un z@'ero (@strong{0}), la valeur
+sera consid@'er@'e comme octale.@*
+Si la valeur indiqu@'ee commence par @strong{0x}, la valeur sera
+consid@'er@'ee comme hexad@'ecimale.@*
+Toute autre valeur sera consid@'er@'e comme d@'ecimale.@*
+Exemple, pour la valeur (10)@sub{d}, le possibilit@'es sont le
+suivantes :
+@multitable @columnfractions .02 .18 .80
+@item @tab d@'ecimal @tab @strong{10}
+@item @tab octal @tab @strong{012}
+@item @tab hexad@'ecimal @tab @strong{0xA} ou @strong{0xa}
+@end multitable
+@subsubsection Les valeurs pr@'ed@'efinies
+Certaines directives exigent qu'un ou plusieurs des ses arguments
+soit choisi parmi des valeurs pr@'ed@'efinies. Dans ca cas, voir la
+documetation de la directive pour connaitre les possibilit@'es.
+@subsubsection Les combinaisons de valeurs pr@'ed@'efinies
+Certaines directives qui exigent qu'un ou plusieurs de ses arguments
+soit choisi parmi des valeurs pr@'ed@'efinies accepte des combinaisons
+de ces valeurs.@*
+Dans ce cas, les diff@'erentes valeurs sont plac@'ees les unes @`a la
+suite des autres, s@'epar@'es par une virgume (@strong{,}) ou par une
+barre verticale (@strong{|}) sans espaces ni tabulations.@*
+Exemple dans le cas de la directive ``event'' :
+@quotation
+@code{event close_write@strong{,}close_nowrite action}@*
+@code{event close_write@strong{|}close_nowrite action}@*
+@end quotation
+@section La directive ``settings''
+@subsection Pr@'esentation
+Cette directive indique le d@'ebut de la section dans laquelle les
+comportements globaux (hors gestion des @'evenements sur les
+r@'epertoires) sont d@'efinis.@*
+Cette directive ne prend pas d'arguments.
+@subsection Les sous directives de ``settings''
+Les sous directives de la section @strong{settings} sont les suivantes
+:
+@multitable @columnfractions .10 .90
+@item @strong{pidfile} @tab
+Indique le fichier @`a utiliser pour consigner l'identifiant processus
+du d@'emon en cours d'ex@'ecution.
+@item @strong{logging} @tab
+Indique le d@'ebut de la sous section dans laquelle est d@'efini les
+consignation dans les journaux syst@`eme.
+@end multitable
+@subsection La directive ``pidfile''
+Cette directive prend, en unique argument, le chemin absolu du fichier
+qui devra contenir l'identifiant du processus (@strong{PID}) lorsque
+le d@'emon s'ex@'ecute.@*
+La valeur par d@'efaut est @code{/var/run/inotify-daemon.pid}
+@subsection La directive ``logging''
+@subsubsection Avant propos
+Cette partie ne documente que les directives. Pour plus de d@'etail
+sur la gestion des logs @xref{Gestion des logs,,Gestion des
+journaux syst@`emes}.
+@subsubsection Pr@'esentation
+Cette directive permet de d@'efinir une section dans laquelle il est
+indiqu@'e comment @strong{inotify-daemon} consigne les traces
+applicatives.@*
+Cette dirrective prend, en argument, le pilote @`a utiliser pour
+consigner les logs.@*
+Dans la section @strong{logging} les directives suivantes sont
+accept@'ees :
+@multitable @columnfractions .10 .90
+@item @strong{level} @tab
+D@'efini le niveau @`a partir duquel les traces sont consign@'ees
+@item @strong{set} @tab
+Permet de d@'efinir une option de la consignation des traces.
+@end multitable
+@subsubsection La directive ``level''
+Cette directive prend, en argument, le niveau minimal des traces
+applicatives qui seront consign@'ees.@*
+Les niveaux possibles sont :
+@itemize @bullet
+@item @strong{ALERT}
+@item @strong{CRIT}
+@item @strong{DEBUG}
+@item @strong{EMERG}
+@item @strong{ERROR}
+@item @strong{INFO}
+@item @strong{NOTICE}
+@item @strong{WARNING}
+@end itemize
+@*
+Exemple :
+@quotation
+@code{@strong{level} notice}
+@end quotation
+@*
+Note :
+@quotation
+Si cette directive est utlis@'ee plusieurs fois, c'est la derni@`ere
+occurence qui impose le niveau minimal.
+@end quotation
+@*
+@subsubsection La directive ``set''
+Cette directive permet de d@'efinir une option du syst@`eme de
+consignation des traces. Elle prend deux arguments :
+@multitable @columnfractions .10 .90
+@item @strong{option}
+@tab Le nom de l'option.
+@item @strong{valeur}
+@tab La valeur assign@'ee @`a l'option.
+@end multitable
+@*
+Exemples, dans le cas de la journalisation dans un fichier :
+@quotation
+@code{@strong{set} filename /var/log/inotify-daemon}.log@*
+@code{@strong{set} stayopen off}
+@end quotation
+@*
+Exemples, dans le cas de la journalisation au travers du d@'emon
+syslog :
+@quotation
+@code{@strong{set} facility daemon}@*
+@code{@strong{set} ident toto}@*
+@code{@strong{set} options ndelay|perror|pid}
+@end quotation
+@section La directive ``directory''
+@subsection Pr@'esentation
+Cette directive permet d'ouvrir une section dans laquelle sont
+d@'efinies les actions devant @^etre ex@'ecut@'ees lorsque des
+@'evenements sont g@'en@'er@'es au sein d'un r@'epertoire donn@'e.
+@subsection Syntaxe
+Cette directive prend en arguent, le r@'epertoire devant @^etre
+scrut@'e. Elle s'utilise comme suit:
+@quotation
+@code{@strong{directory} nomrepertoire}
+@quotation
+@code{...}
+@end quotation
+@code{@strong{end}}
+@end quotation
+@subsection Les sous directives de ``directory''
+Les sous directives d'une section @strong{directory} sont les
+suivantes :
+@multitable @columnfractions .10 .90
+@item @strong{user}@tab
+Utilisateur sous l'identit@'e duquel sont lanc@'ees les actions.
+@item @strong{group}@tab
+Groupe sous l'identit@'e duquel sont lanc@'ees les actions.
+@item @strong{shell}@tab
+Shell devant @^etre utilis@'e pour ex@'ecuter les actions.
+@item @strong{event}@tab
+D@'efinition d'une action pour un ou plusieurs @'ev@'enements.
+@end multitable
+@subsection La directive ``user''
+Cette directive permet d'indiquer sous quelle identit@'e utilisateur
+(@strong{uid}) doivent @^etre ex@'ecut@'ees les actions.@*
+Exemple :
+@quotation
+@code {@strong{user} www-data}
+@end quotation
+@*
+La valeur par d@'efaut est ``nobody''.
+@page
+@subsection La directive ``group''
+Cette directive permet d'indiquer sous quelle identit@'e de groupe
+(@strong{gid}) doivent @^etre ex@'ecut@'ees les actions.@*
+Exemple :
+@quotation
+@code {@strong{group} www-data}
+@end quotation
+@*
+La valeur par d@'efaut est ``nogroup''.
+@subsection La directive ``shell''
+Cette directive indique quel langage de commande (shell) utiliser pour
+interpr@'eter la commande. Le shell par d@'efaut est ``/bin/sh''.@*
+Exemple :
+@quotation
+@code {@strong{shell} /bin/csh}
+@end quotation
+@subsection La directive ``event''
+@subsubsection Pr@'esentation
+Cette directive permet de d@'efinir l'action @`a ex@'ecuter lorsque un
+ou plusieurs @'ev@'enements surviennent sur le r@'epertoire.
+@subsubsection Les diff@'erente @'ev@'enements
+Cette directive accepte les @'evenements suivants de fa@,{c}on
+unitaire ou en combinaison :
+@multitable @columnfractions .25 .75
+@item @strong{ACCESS} @tab
+Le fichier @`a l'origine de l'@'ev@'enement @`a @'et@'e acc@`ed@'e.
+@item @strong{ATTRIB} @tab
+Les m@'etadonn@'ees du fichier @`a l'origine de l'@'ev@'enement
+(droits, propri@'et@'e, ...) ont @'et@'e modif@'ees.
+@item @strong{CLOSE} @tab
+@'Equivalent @`a @strong{CLOSE_WRITE|CLOSE_NOWRITE}
+@item @strong{CLOSE_WRITE} @tab
+Le fichier @`a l'origine de l'@'ev@'enement vient d'@^etre ferm@'e
+apr`es avoir @'et@'e ouvert en @'ecriture.
+@item @strong{CLOSE_NOWRITE} @tab
+Le fichier @`a l'origine de l'@'ev@'enement vient d'@^etre ferm@'e
+apr`es avoir @'et@'e ouvert en lecture seule.
+@item @strong{CREATE} @tab
+Le fichier @`a l'origine de l'@'ev@'enement vient d'@^etre cr@'e@'e.
+@item @strong{DELETE} @tab
+Le fichier @`a l'origine de l'@'ev@'enement vient d'@^etre
+supprimm@'e.
+@item @strong{DELETE_SELF} @tab
+Le r@'epertoire en cours de scrutation vient d@^etre supprim@'e.
+@item @strong{MODIFY} @tab
+Le fichier @`a l'origine de l'@'ev@'enement vient d'@^etre modifi@'e.
+@item @strong{MOVE_SELF} @tab
+Le r@'epertoire en cours de scrutation vient d'êre d@'eplac@'e.
+@item @strong{OPEN} @tab
+Le fichier @`a l'origine de l'@'ev@'enement vient d'@^etre ouvert.
+@item @strong{RENAME} @tab
+Le fichier @`a l'origine de l'@'ev@'enment vient de changer de nom.
+@end multitable
+@*
+@ifinfo
+Note :
+@end ifinfo
+@ifnotinfo
+@strong{Note :}
+@end ifnotinfo
+@quotation
+Pour des actions diff@'erentes sur des @'ev@'enements donn@'es,
+plusieurs directives @strong{event} peuvent cohabiter au sein d'une
+section @strong{directory} tant que les @'ev@'enements g@'er@'es sont
+distincts.
+@end quotation
+@page
+@subsubsection Syntaxe
+Cette directive s'utilise comme suit :
+@quotation
+@code{@strong{event} events action}
+@end quotation
+@*
+Avec :
+@multitable @columnfractions .20 .80
+@item @strong{events} : @tab
+Un @'ev@'enement ou une combinaison d'@'ev@'enements.
+@item @strong{command} : @tab
+La commande a ex@'ecuter. Cette commande commence au premier
+caract@`ere non blanc apr@`es l'argument @strong{events} et se termine
+avec la fin de la ligne. Les espaces et tabulations sont donc
+accept@'ees.@*
+La commande est une cha@^ine de caract@`eres ayant des directives de
+formes. A l'exception du caract@`ere pourcent (@strong{%}) qui est
+r@'eserv@'e pour les remplacements, les caract@`eres sont pris en
+compte tel quel.@*
+Le caract@`ere pourcent (@strong{%}) permet de d@'efinir des
+remplacements en fonction du ou des caract@`eres qui le suivent. Ces
+remplacements sont les suivants :
+@multitable @columnfractions .10 .90
+@item @code{@strong{%}} @tab
+Le caract@`ere pourcent lui m@^eme.
+@item @code{@strong{c}} @tab
+``Cookie'' associ@'e @`a l'@'ev@'enement en d@'ecimal dans le cas
+@strong{RENAME}.
+@item @code{@strong{cb}} @tab
+``Cookie'' associ@'e @`a l'@'ev@'enement en binaire sur 32 chiffres
+dans le cas @strong{RENAME}.
+@item @code{@strong{cd}} @tab
+``Cookie'' associ@'e @`a l'@'ev@'enement en d@'ecimal dans le cas
+@strong{RENAME}.
+@item @code{@strong{co}} @tab
+``Cookie'' associ@'e @`a l'@'ev@'enement en octal sur 11 chiffres dans
+le cas @strong{RENAME}.
+@item @code{@strong{cx}} @tab
+``Cookie'' associ@'e @`a l'@'ev@'enement en hexad@'ecimal minuscule
+sur 8 chiffres dans le cas @strong{RENAME}.
+@item @code{@strong{eX}} @tab
+``Cookie'' associ@'e @`a l'@'ev@'enement en hexad@'ecimal majuscule
+sur 8 chiffres dans le cas @strong{RENAME}.
+@item @code{@strong{D}} @tab
+Le nom du r@'epertoire dans lequel l'@'even@'enement est survenu.
+@item @code{@strong{E}} @tab
+Le nom de l'@'evenement.
+@item @code{@strong{e}} @tab
+Le masque de l'@'ev@'enement en d@'ecimal.
+@item @code{@strong{eb}} @tab
+Le masque de l'@'ev@'enement en binaire sur 32 chiffres.
+@item @code{@strong{ed}} @tab
+Le masque de l'@'ev@'enement en d@'ecimal.
+@item @code{@strong{eo}} @tab
+Le masque de l'@'ev@'enement en octal sur 11 chiffres.
+@item @code{@strong{ex}} @tab
+Le masque de l'@'ev@'enement en hexad@'ecimal minuscules sur 8
+chiffres.
+@item @code{@strong{eX}} @tab
+Le masque de l'@'ev@'enement en hexad@'ecimal majuscules sur 8
+chiffres.
+@item @code{@strong{N}} @tab
+Le nom du fichier ayant caus'e l'@'ev@'enement. Dans le cas de
+l'@'ev@'enement @strong{RENAME}, c'est le nouveau nom.
+@item @code{@strong{O}} @tab
+L'ancien nom du fichier dans le cas de l'@'ev@'enement
+@strong{RENAME}.
+@end multitable
+@*
+@ifinfo
+Note :
+@end ifinfo
+@ifnotinfo
+@strong{Note :}
+@end ifnotinfo
+@quotation
+Par d@'efaut la sortie standard (stdout) de l'action est consign@'ee
+dans les journaux syst@`emes avec le niveau @strong{DEBUG} et la
+sortie d'erreur (stderr) avec le niveau @strong{NOTICE}.
+@end quotation
+@end multitable
+@*
+Exemple 
+@quotation
+@code{event rename @strong{echo %D %Cx %F renomme en %O}}@*
+@code{event close_write @strong{ls -l %D/%F}}
+@end quotation
+@page
+@section La directive ``include''
+@subsection Pr@'esentation
+Cette directive permet d'inclure des fichiers contenant des
+@'el@'ements de configuration compl@'ementaires. Cette directive est
+pratique pour @'eviter, dans le cas o@`u de nombreux r@'epertoires
+sont scrut@'es, @'evitant ainsi d'avoir @`a traiter un tr@`es long
+fichier de configuration lorsque l'on doit ajouter, supprimer ou
+modifier un r@'epertoire scrut@'e.
+@subsection Utilisation
+Cette directive ne prend qu'un unique argument et s'utilise comme suit
+:
+@quotation
+@code{@strong{include} nomfichier}
+@end quotation
+Ainsi l'inclusion d'un unique fichier se fait comme dans l'exemple
+suivant :
+@quotation
+@code{@strong{include} /etc/inotify-daemon.conf.local}
+@end quotation
+Il est possible de d@'efinir un ensemble de noms de fichiers en
+utilisant des caract@`eres sp@'eciaux tel que d@'efini dans
+@strong{glob(7)}. Il est ainis possible l'ensemble des fichiers se
+terminant avec l'extension ``@code{.conf}'' dans un r@'epertoire
+donn@'e :
+@quotation
+@code{@strong{include} /etc/inotify-daemon.d/*.conf}
+@end quotation
+A noter que si le fichier inclus n'existe pas (ou que la
+g@'en@'eration de nom de fichier ne retourne aucun fichier existant),
+ce ne sera pas consid@'er@'e comme une erreur de configuration.
+@node Gestion des logs
+@chapter Gestion des journaux syst@`emes (logs)
+@section Les niveaux d'@'ecriture dans les journaux syst@`emes
+@subsection Les niveaux
+@subsubsection D@'efinition des niveaux
+Les diff@'erents niveaux d'@'ecriture dans les journaux syst@`emes
+sont directement calqu@'es sur ceux propos@'es par syslog(3).@*
+Ces niveaux sont les suivants :
+@multitable @columnfractions .15 .85
+@headitem niveau @tab description
+@item @strong{ALERT}  @tab Une action doit @^etre entreprise
+imm@'ediatement.
+@item @strong{CRIT}   @tab Condition critique.
+@item @strong{DEBUG}  @tab Information de debogage.
+@item @strong{EMERG}  @tab Le syst@'eme n'est plus utilisable.
+@item @strong{ERROR}  @tab Condition d'erreur.
+@item @strong{INFO}   @tab Message d'information.
+@item @strong{NOTICE} @tab Condition normale mais significative.
+@item @strong{WARNING}@tab Message n@'ecessitant une attention.
+@end multitable
+@subsubsection Hi@'erarchisation des niveaux
+Les niveaux de messages sont hi@'erarchis@'es. Cela signifie qu'il y a
+une relation d'importance entre les diff@'erents niveaux.@*
+Cette hi@'erarchisation de ces niveaux est la suivante :@*
+@quotation
+@code{@strong{^} (+ @'elev@'e) }@*
+@code{@strong{|} EMERG }@*
+@code{@strong{|} ALERT }@*
+@code{@strong{|} CRIT }@*
+@code{@strong{|} ERROR }@*
+@code{@strong{|} WARNING }@*
+@code{@strong{|} NOTICE }@*
+@code{@strong{|} INFO} @*
+@code{@strong{|} DEBUG }@*
+@code{@strong{|} (+ bas) }@*
+@end quotation
+@*
+Lorsque le niveau des messages est d@'efini (cf. directive
+@strong{level} de la section @strong{logging}, seuls les messages d'un
+niveau sup@'erieur ou @'egal @`a ce niveau seront consign@'es.
+@*
+@page
+@section Les pilotes
+@subsection La notion de pilote
+La gestion des traces d'@strong{inotify-daemon} peut consigner les
+informations selon diff@'erentes mani@`eres. C'est le r@^ole des
+pilotes.@*
+Les diff@'erents pilotes disponibles sont les suivants :
+@multitable @columnfractions .10 .90
+@item @strong{default} @tab
+Ce pilote redirige les messages vers la sortie standard ou la sortie
+d'erreur du terminal.
+@item @strong{file} @tab
+Ce pilote redirige les messages vers un fichier.
+@item @strong{syslog} @tab
+Ce pilote redirige les messages vers le @strong{syslog}.
+@end multitable
+@*
+@ifinfo
+Note :
+@end ifinfo
+@ifnotinfo
+@strong{Note :}
+@end ifnotinfo
+@quotation
+Chaque pilote poss@`ede ses propres options.
+@end quotation
+
+@section Les diff@'erentes options
+
+@subsection Les options globales
+@subsubsection les diff@'erentes options globales
+Les diff@'erentes options globales sont les suivantes :
+@multitable @columnfractions .10 .90
+@item @strong{act_err_lvl}@tab
+Indique le niveau @`a utiliser pour consigner les sorties d'erreurs
+lorsqu'une action sur un @'ev@'enement.
+@item @strong{act_out_lvl}@tab
+Indique le niveau @`a utiliser pour consigner les sorties standard
+lorsqu'une action sur un @'ev@'enement.
+@item @strong{timestamp}  @tab
+Indique le format de l'horodatage des messages.
+@end multitable
+@subsubsection L'option ``act_err_lvl''
+L'option globale @strong{act_err_lvl} permet de d@'efinir avec quel
+niveau sont consign@'ees les messages @'emis sur la sortie d'erreur
+par les actions egnag@'ees suite @`a un @'ev@'enement.@*
+Sa valeur par d@'efaut est : @code{NOTICE}.
+@subsubsection L'option ``act_out_lvl''
+L'option globale @strong{act_out_lvl} permet de d@'efinir avec quel
+niveau sont consign@'ees les messages @'emis sur la sortie standard
+par les actions egnag@'ees suite @`a un @'ev@'enement.@*
+Sa valeur par d@'efaut est : @code{DEBUG}.
+@subsubsection L'option ``timestamp''
+L'option globale @strong{timestamp} permet de d@'efinir le format de
+l'horodatage des lignes consign@'ees dans le journal.@*
+Cette option prend, en argument, une cha@^ine de caract@`eres dans le
+format d@'efini par @strong{strftime(3)}.@*
+Le valeur par d@'efaut est : @code{%d/%m/%Y %H:%M:%S}.
+@page
+@subsection Les options sp@'ecifiques @`a ``default''
+La seule option sp@'ecifique pour le pilote ``default'' est
+@strong{channel}. Elle indique sur quel canal doivent @^etre
+consign@'ees les @'ecritures du journal. Cette option accepte les
+valeurs suivantes :
+@multitable @columnfractions .10 .90
+@item @strong{stdout}
+@tab Les informations sont @'ecrite sur la sortie standard.
+@item @strong{stderr}
+@tab Les informations sont @'ecrite sur la sortie
+d'erreur.
+@end multitable
+@*
+La valeur par d@'efaut de cette option est la sortie d'erreur (@strong{stderr}).
+
+@subsection Les options sp@'ecifiques @`a ``file''
+@subsubsection Les diff@'erentes options
+Les diff@'erentes options prises en compte par le pilote @strong{file}
+sont les suivantes :
+@multitable @columnfractions .15 .85
+@item @strong{filename}
+@tab D@'efini le nom du fichier dans lequel seront consign@'ees les
+@'ecritures dans le journal.
+@item @strong{mode}
+@tab D@'efini le mode de cr@'eation du fichier.
+@item @strong{stayopen}
+@tab D@'efini si le fichier doit rester ouvert ou @^etre ouvert puis
+ferm@'e @`a chaque @'ecriture.
+@item @strong{timestamped}
+@tab Indique si le nom de fichier donn@'e avec l'option @strong{filename}
+est dans un format horodat@'e.
+@end multitable
+
+@subsubsection L'option ``filename''
+La valeur par d@'efaut de cette option est
+``/var/log/inotify-daemon-%Y%m''. Cette valeur n@'ecessite que
+l'option @strong{timestamped} soit activ@'ee (cf. ci-desous).
+
+@subsubsection L'option ``mode''
+Mode de cr@'eation des fichiers. La valeur est un nombre
+octal compris entre 000 et 777 qui indique les droits d'acc@`es au
+fichier cr@'e@'e. Ces droits d'acc@`es sont les m@^emes que ceux
+d@'efinis par @strong{chmod(2)}.
+Le mode de cr@'eation par d@'efaut des fichiers journaux est
+@strong{600}, c'est @`a dire que le propri@'etaire @`a les droits
+d'@'ecriture et lecture et que les membres du groupe et autres
+utilisateurs n'ont aucun droit.
+@subsubsection L'option ``stayopen''
+Indique si le fichier doit rester ouvert entre deux @'ecritures. Les
+valeurs possibles sont les suivantes. Cette option prend une valeur
+bool@'eenne.@*
+Dans le cas o@`u cette option est activ@'e et que l'option
+@strong{timestamped} est positionn@'ee, le nom du fichier est
+recalcul@'e @`a chaque trace @'emise. Si le nom du fichier diff@`ere,
+du pr@'ec@'edent, l'ancien fichier est ferm@'e et le nouveau fichier
+cr@'e@'e.
+@subsubsection L'option ``timestamped''
+Indique si le nom du fichier est horodat@'e. Cette option prend en
+argument une valeur boolenne. Dans le cas o`u cette option est
+activ@'e, le nom du fichier est calcul@'e en fonction du format
+@strong{strftime(3)}.@*
+@page
+@subsection Les options sp@'ecifiques @`a ``syslog''
+@subsubsection Les diff@'erentes options
+Le pilote @strong{syslog} accepte les options suivantes :
+@multitable @columnfractions .10 .90
+@item @strong{facility}
+@tab Facilit@'e syslog devant @^etre utilis@'ee par @strong{syslog(3)}.
+@item @strong{ident}
+@tab Identifiant utilis@'e pour les traves @'emises dans le @strong{syslog(3)}.
+@item @strong{options}
+@tab Options de @strong{syslog(3)}.
+@end multitable
+
+@subsubsection L'option ``facility''
+Cette option permet de d@'efinir la facili@'e syslog qui devra @^etre
+utilis@'ee pour les messages.@*
+Les valeurs de ``facility'' possibles sont les suivantes :
+@multitable @columnfractions .15 .85
+@item @strong{AUTH}
+@tab Messages ayant trait @`a la s@'ecurit@'e out aux autorisations.
+@item @strong{AUTHPRIV}
+@tab Messages ayant trait @`a la s@'ecurit@'e out aux
+autorisations. (version priv@'e).
+@item @strong{CRON}
+@tab Messages ayant trait aux d@'emons d'horloge (@strong{cron} et
+@strong{at}).
+@item @strong{DAEMON}
+@tab Messages ayant trait aux d@'emons syst@`emes sans facilit@'e sp@'ecifique.
+@item @strong{FTP}
+@tab Messages ayant trait au d@'emons FTP.
+@item @strong{KERN}
+@tab Messages du noyeau Linux.
+@item @strong{LOCAL0}@*@ @ @ @`a@*@strong{LOCAL7}
+@tab Messages @`a usage locaux.
+@item @strong{LPR}
+@tab Messages ayant trait au syst@`eme d'impression.
+@item @strong{MAIL}
+@tab Messages ayant trait au syst@`eme de m@`els.
+@item @strong{NEWS}
+@tab Messages ayant trait au syst@`eme de news.
+@item @strong{SYSLOG}
+@tab Messages g@'en@'er@'es de fa@,{c}on interne par @strong{syslogd(8)}.
+@item @strong{USER}
+@tab Messages g@'en@'eriques au niveau utilisateurs.
+@item @strong{UUCP}
+@tab Messages ayant trait au syst@`eme UUCP.
+@end multitable
+
+@subsubsection L'option ``ident''
+Cette option est permet de d@'efinir un identifiant qui sera
+pr@'efix@'e @`a chaque message. Cette option prend, en argument, une
+cha@^ine de caract@`eres ne comportant aucun blanc (espaces et
+tabulations).
+
+@subsubsection L'option ``options''
+Cette option permet de fixer les options de
+@strong{syslog(3)}. Cette option prend, en argument, soit
+@strong{none} pour indiquer qu'il n'y a pas d'options, soit une
+ou une combinaison des options suivantes :
+@multitable @columnfractions .20 .80
+@item @strong{CONS}
+@tab Les messages sont @'ecris directement sur la console syst@`eme s'il y
+a une erreur lors de l'@'emission du message au syst\`eme de
+gestion des journalisation (syslog).
+@item @strong{NDELAY}
+@tab Ouvrir la connexion au syst@`eme de journalisation imm@'ediatement
+lors de l'initialisation.
+@item @strong{NOWAIT}
+@tab Ne pas attendre le processus fils s'il est cr@'e@'e lors de l'envoi
+d'un message.
+@item @strong{ODELAY}
+@tab L'inverse de @strong{NDELAY}. La connexion au syst@`eme de
+journalisation est effectu@'ee que lors de l'@'emission du premier
+message.
+@item @strong{PERROR}
+@tab Les messages sont aussi @'ecris sur la sortie d'erreur (stderr).
+@item @strong{PID}
+@tab L'identifiant processus (PID) de l'@'emetteur est inclus dans chaque
+message.
+@end multitable
+
+@bye

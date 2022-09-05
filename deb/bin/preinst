@@ -1,0 +1,18 @@
+#!/bin/bash
+
+function ccr_preinst_abort_upgrade { return 0; }
+function ccr_preinst_installl      { return 0; }
+function ccr_preinst_upgrade       { return 0; }
+
+CMD=${1}
+FCT=ccr_preinst_${CMD/-/_}
+
+if declare -F | awk '/^declare -f ccr_preinst/ { print $3; }' | grep ${FCT} > /dev/null 2>&1
+then
+    shift
+    ${FCT} "$@";
+    exit $?
+else
+    echo "Bad first argument '${1}'" >&2
+    exit 255
+fi

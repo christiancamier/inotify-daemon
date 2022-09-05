@@ -1,0 +1,74 @@
+#  Copyright (c) 2022
+#  	Christian CAMIER <christian.c@promethee.services>
+#  
+#  Permission to use, copy, modify, and distribute this software for any
+#  purpose with or without fee is hereby granted, provided that the above
+#  copyright notice and this permission notice appear in all copies.
+#  
+#  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+#  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+#  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+#  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+#  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+#  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+#
+# Target directories definitions
+#
+
+include ../Makefile.inc
+
+have_texi2any ?= @have_texi2any@
+have_texi2pdf ?= @have_texi2pdf@
+
+MAN5S	       = inotify-daemon.conf.5
+MAN8S	       = inotify-daemon.8
+ifeq ($(have_texi2any), yes)
+INFO           = inotify-daemon.info
+else
+INFO           =
+endif
+ifeq ($(have_texi2pdf), yes)
+PDF            = inotify-daemon.pdf
+else
+PDF	       =
+endif
+DOCS	       = $(PDF)
+ALL	       = $(INFO) $(DOCS) $(MAN8S) $(MAN5S)
+
+.SUFFIXES: .texi .pdf
+
+.texi.info:
+	texi2any $<
+
+.texi.pdf:
+	texi2pdf $<
+
+all: $(ALL)
+
+install: all
+
+clean: Force
+	rm -fr $(ALL) $(COBJS) autom4te.cache
+	rm -fr *.aux *.cp *.cps *.log *.toc *.pdf *.texi
+	rm -fr *~ \#* *.i
+
+distclean: clean
+	rm -fr Makefile
+	rm -fr config.h config.log config.status
+	rm -fr autom4te.cache
+
+Force:
+	:
+
+inotify-daemon.8: 	inotify-daemon.8.source
+	python3 ../util/source2any.py -M ../Makefile.inc -M ../version_informations $<
+inotify-daemon.conf.5: 	inotify-daemon.conf.5.source
+	python3 ../util/source2any.py -M ../Makefile.inc -M ../version_informations $<
+version.texi: version.texi.source
+	UDTE="$$(stat -c '%Y' $<)"; python3 ../util/source2any.py -M ../Makefile.inc -M ../version_informations -D updated=$$(date -d @$$UDTE +%d/%m/%Y) -D updated_month=$$(date -d @$$UDTE +%m/%Y) $<
+inotify-daemon.texi: inotify-daemon.texi.source version.texi
+	UDTE="$$(stat -c '%Y' $<)"; python3 ../util/source2any.py -M ../Makefile.inc -M ../version_informations -D updated=$$(date -d @$$UDTE +%d/%m/%Y) -D updated_month=$$(date -d @$$UDTE +%m/%Y) $<
+inotify-daemon.pdf:  inotify-daemon.texi version.texi
+inotify-daemon.info: inotify-daemon.texi version.texi

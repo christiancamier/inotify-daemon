@@ -1,0 +1,137 @@
+#  Copyright (c) 2022
+#  	Christian CAMIER <christian.c@promethee.services>
+#  
+#  Permission to use, copy, modify, and distribute this software for any
+#  purpose with or without fee is hereby granted, provided that the above
+#  copyright notice and this permission notice appear in all copies.
+#  
+#  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+#  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+#  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+#  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+#  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+#  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+#
+# Target directories definitions
+#
+#!START
+PREFIX        ?= @prefix@
+prefix        ?= @prefix@
+exec_prefix   ?= @exec_prefix@
+bindir        ?= @bindir@
+sbindir       ?= @sbindir@
+sysconfdir    ?= @sysconfdir@
+sbindir       ?= @sbindir@
+includedir    ?= @includedir@
+oldincludedir ?= @oldincludedir@
+libdir        ?= @libdir@
+libexecdir    ?= @libexecdir@
+datarootdir   ?= @datarootdir@
+mandir        ?= @mandir@
+man1dir       ?= $(mandir)/man1
+man3dir       ?= $(mandir)/man3
+docdir        ?= @docdir@
+infodir       ?= @infodir@
+localstatedir ?= @localstatedir@
+localedir     ?= @localedir@
+htmldir       ?= @htmldir@
+dvidir        ?= @dvidir@
+pdfdir        ?= @pdfdir@
+psdir         ?= @psdir@
+#!END
+
+#
+# Behaviour options
+#
+
+MACROS =				\
+	-DSYSCONFDIR=\"$(sysconfdir)\"	\
+	-DPREFIX=\"$(prefix)\"
+
+# Compilers options
+#
+
+MAKE    ?= make
+SUBMAKE  = $(MAKE) -f Makefile
+CC	?= LANG=C gcc
+CFLAGS	?= -g -Wall -Wunused-variable -Werror -I. -I../libCCR $(MACROS)
+
+
+INSTALL      = install
+INSTALL_SBIN = $(INSTALL) -o root -g root -m 755 -t $(DESTDIR)$(sbindir)
+INSTALL_MAN1 = $(INSTALL) -o bin  -g bin  -m 644 -t $(DESTDIR)$(man1dir)
+
+#
+# Compilation rules
+#
+
+.SUFFIXES: .c .o .i .sh .po
+
+.c.o:
+	$(CC) $(CFLAGS) -c $<
+
+.c.po:
+	$(CC) -fPIC $(CFLAGS) -c -o $@ $<
+
+.c.i:
+	$(CC) $(CFLAGS) -E $< > $@
+
+.sh:
+	cp $< $@
+
+.py:
+	cp $< $@
+
+
+CSRCS	= $(shell echo *.c)
+CHDRS	= $(shell echo *.h)
+COBJS	= $(CSRCS:.c=.o)
+EXECS   = inotify-daemon
+SYSD    = inotify-daemon.service
+CNF     = inotify-daemon.conf
+ALL     = $(EXECS) $(SYSD) $(CNF)
+
+all: $(ALL)
+
+install: all install.sbin
+
+clean: Force
+	rm -fr $(ALL) $(COBJS) autom4te.cache
+	rm -fr *~ \#* *.i
+
+distclean: clean
+	rm -fr Makefile
+	rm -fr config.h config.log config.status
+	rm -fr autom4te.cache
+
+install.sbin: $(SBINS)
+	mkdir -m 755 -p $(sbindir)
+	for EXE in $(SBINS);		\
+	do				\
+	  $(INSTALL_SBIN) $$EXE;	\
+	done
+
+inotify-daemon: $(COBJS)
+	$(CC) $(LDOPTS) -o $@ $(COBJS) ../libCCR/libCCR.a
+
+ind_command.o:		ind_command.c		inotify-daemon.h ind_tunables.h
+ind_configuration.o:	ind_configuration.c	inotify-daemon.h ind_tunables.h
+ind_directory.o:	ind_directory.c		inotify-daemon.h
+ind_engine.o:		ind_engine.c		inotify-daemon.h
+ind_error.o:		ind_error.c		inotify-daemon.h
+ind_inotify.o:		ind_inotify.c		inotify-daemon.h
+ind_log_file.o:		ind_log_file.c		inotify-daemon.h
+ind_log_syslog.o:	ind_log_syslog.c	inotify-daemon.h
+ind_signal.o:		ind_signal.c		inotify-daemon.h
+inotify-daemon.o:	inotify-daemon.c	inotify-daemon.h ind_tunables.h
+
+inotify-daemon.conf: inotify-daemon.conf.source Makefile
+	python3 ../util/source2any.py -M ../Makefile.inc $<
+
+inotify-daemon.service: inotify-daemon.service.source Makefile
+	python3 ../util/source2any.py -M ../Makefile.inc $<
+
+Force:
+	:
