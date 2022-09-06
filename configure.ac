@@ -48,6 +48,9 @@ AC_CHECK_PROG(HAVE_TEXI2PDF, [texi2pdf], [yes], [no])
 AC_SUBST(have_texi2pdf, $HAVE_TEXI2PDF)
 test "$HAVE_TEXI2ANY" == "non" && AC_MSG_NOTICE("PDF documentation will not be built")
 
+# Makefiles substitutions
+AC_SUBST(topdir, `pwd -P`)
+
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h limits.h paths.h stdint.h stdlib.h string.h strings.h sys/param.h syslog.h unistd.h])
 AC_CHECK_HEADERS([sys/types.h sys/inotify.h sys/signalfd.h])
@@ -69,8 +72,9 @@ AC_CHECK_FUNCS([atexit dup2 endgrent endpwent inotify_add_watch inotify_init1 me
 AC_CONFIG_FILES([Makefile
 		 Makefile.inc
                  src/Makefile
-                 doc_en/Makefile
-		 doc_fr/Makefile])
+		 doc/Makefile
+                 doc/en/Makefile
+		 doc/fr/Makefile])
 
 # Gets the libCCR needed for compilation
 if   test -d libCCR

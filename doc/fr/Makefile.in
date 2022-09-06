@@ -17,7 +17,7 @@
 # Target directories definitions
 #
 
-include ../Makefile.inc
+include @topdir@/Makefile.inc
 
 have_texi2any ?= @have_texi2any@
 have_texi2pdf ?= @have_texi2pdf@
@@ -63,12 +63,12 @@ Force:
 	:
 
 inotify-daemon.8: 	inotify-daemon.8.source
-	python3 ../util/source2any.py -M ../Makefile.inc -M ../version_informations $<
+	python3 $(TOPDIR)/util/source2any.py -M $(TOPDIR)/Makefile.inc -M $(TOPDIR)/version_informations $<
 inotify-daemon.conf.5: 	inotify-daemon.conf.5.source
-	python3 ../util/source2any.py -M ../Makefile.inc -M ../version_informations $<
+	python3 $(TOPDIR)/util/source2any.py -M $(TOPDIR)/Makefile.inc -M $(TOPDIR)/version_informations $<
 version.texi: version.texi.source
-	UDTE="$$(stat -c '%Y' $<)"; python3 ../util/source2any.py -M ../Makefile.inc -M ../version_informations -D updated=$$(date -d @$$UDTE +%d/%m/%Y) -D updated_month=$$(date -d @$$UDTE +%m/%Y) $<
+	UDTE="$$(stat -c '%Y' $<)"; python3 $(TOPDIR)/util/source2any.py -M $(TOPDIR)/Makefile.inc -M $(TOPDIR)/version_informations -D updated=$$(date -d @$$UDTE +%d/%m/%Y) -D updated_month=$$(date -d @$$UDTE +%m/%Y) $<
 inotify-daemon.texi: inotify-daemon.texi.source version.texi
-	UDTE="$$(stat -c '%Y' $<)"; python3 ../util/source2any.py -M ../Makefile.inc -M ../version_informations -D updated=$$(date -d @$$UDTE +%d/%m/%Y) -D updated_month=$$(date -d @$$UDTE +%m/%Y) $<
+	UDTE="$$(stat -c '%Y' $<)"; python3 $(TOPDIR)/util/source2any.py -M $(TOPDIR)/Makefile.inc -M $(TOPDIR)/version_informations -D updated=$$(date -d @$$UDTE +%d/%m/%Y) -D updated_month=$$(date -d @$$UDTE +%m/%Y) $<
 inotify-daemon.pdf:  inotify-daemon.texi version.texi
 inotify-daemon.info: inotify-daemon.texi version.texi

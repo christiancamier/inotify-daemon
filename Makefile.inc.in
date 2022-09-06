@@ -20,7 +20,7 @@
 #
 #!START
 PACKAGE_TARNAME ?= inotify-daemon
-
+TOPDIR        ?= @topdir@
 PREFIX        ?= @prefix@
 prefix        ?= @prefix@
 exec_prefix   ?= @exec_prefix@

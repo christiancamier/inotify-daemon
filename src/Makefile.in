@@ -128,10 +128,10 @@ ind_signal.o:		ind_signal.c		inotify-daemon.h
 inotify-daemon.o:	inotify-daemon.c	inotify-daemon.h ind_tunables.h
 
 inotify-daemon.conf: inotify-daemon.conf.source Makefile
-	python3 ../util/source2any.py -M ../Makefile.inc $<
+	python3 $(TOPDIR)/util/source2any.py -M ../Makefile.inc $<
 
 inotify-daemon.service: inotify-daemon.service.source Makefile
-	python3 ../util/source2any.py -M ../Makefile.inc $<
+	python3 $(TOPDIR)/util/source2any.py -M ../Makefile.inc $<
 
 Force:
 	:

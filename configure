@@ -629,6 +629,7 @@ LIBOBJS
 EGREP
 GREP
 CPP
+topdir
 have_texi2pdf
 HAVE_TEXI2PDF
 have_texi2any
@@ -3678,6 +3679,10 @@ have_texi2pdf=$HAVE_TEXI2PDF
 test "$HAVE_TEXI2ANY" == "non" && { $as_echo "$as_me:${as_lineno-$LINENO}: \"PDF documentation will not be built\"" >&5
 $as_echo "$as_me: \"PDF documentation will not be built\"" >&6;}
 
+# Makefiles substitutions
+topdir=`pwd -P`
+
+
 # Checks for header files.
 
 ac_ext=c
@@ -4554,7 +4559,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files Makefile Makefile.inc src/Makefile doc_en/Makefile doc_fr/Makefile"
+ac_config_files="$ac_config_files Makefile Makefile.inc src/Makefile doc/Makefile doc/en/Makefile doc/fr/Makefile"
 
 
 # Gets the libCCR needed for compilation
@@ -5265,8 +5270,9 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "Makefile.inc") CONFIG_FILES="$CONFIG_FILES Makefile.inc" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
-    "doc_en/Makefile") CONFIG_FILES="$CONFIG_FILES doc_en/Makefile" ;;
-    "doc_fr/Makefile") CONFIG_FILES="$CONFIG_FILES doc_fr/Makefile" ;;
+    "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
+    "doc/en/Makefile") CONFIG_FILES="$CONFIG_FILES doc/en/Makefile" ;;
+    "doc/fr/Makefile") CONFIG_FILES="$CONFIG_FILES doc/fr/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

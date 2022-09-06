@@ -14,12 +14,11 @@
 #  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-include Makefile.inc
+include @topdir@/Makefile.inc
 
 SUBDIRS = libCCR	\
 	  src		\
-	  doc_en	\
-	  doc_fr
+	  doc
 
 all install: Force
 	$(SUBMAKE) _$@
