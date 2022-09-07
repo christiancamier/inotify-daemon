@@ -555,7 +555,7 @@ le cas @strong{RENAME}.
 @item @code{@strong{cx}} @tab
 ``Cookie'' associ@'e @`a l'@'ev@'enement en hexad@'ecimal minuscule
 sur 8 chiffres dans le cas @strong{RENAME}.
-@item @code{@strong{eX}} @tab
+@item @code{@strong{CX}} @tab
 ``Cookie'' associ@'e @`a l'@'ev@'enement en hexad@'ecimal majuscule
 sur 8 chiffres dans le cas @strong{RENAME}.
 @item @code{@strong{D}} @tab
@@ -576,7 +576,7 @@ chiffres.
 @item @code{@strong{eX}} @tab
 Le masque de l'@'ev@'enement en hexad@'ecimal majuscules sur 8
 chiffres.
-@item @code{@strong{N}} @tab
+@item @code{@strong{F}} @tab
 Le nom du fichier ayant caus'e l'@'ev@'enement. Dans le cas de
 l'@'ev@'enement @strong{RENAME}, c'est le nouveau nom.
 @item @code{@strong{O}} @tab

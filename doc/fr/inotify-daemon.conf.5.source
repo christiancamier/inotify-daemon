@@ -1,0 +1,514 @@
+.\"
+.\" Author: Christian CAMIER <christian.c@promethee.services>
+.\" Copyright (c) 2020 Christian CAMIER <christian.c@promethee.services>, Paris, France
+.\"                    All rights reserved
+.\"
+.\" As far as I am concerned, the code I have written for this software
+.\" can be used freely for any purpose.  Any derived versions of this
+.\" software must be clearly marked as such, and if the derived work is
+.\" incompatible with the protocol description in the RFC file, it must be
+.\" called by a name other than "ssh" or "Secure Shell".
+.\"
+.\" Copyright (c) 2020 Christian CAMIER.  All rights reserved.
+.\" Copyright (c) 2020 Promethée Services Campbell.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+.\" OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+.\" IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+.\" INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+.\" NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+.\" DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+.\" THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+.\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\"
+.TH INOTIFY-DAEMON.CONF 5 Jully 06 2020 "Linux Administrator's Manual"
+.SH NAME
+.B inotify-daemon.conf
+\- Fichier de configuration d'inotify-daemon
+.SH DESCRITION
+.SS Avant propos
+.BR inotify-daemon(8)
+lit ses données de configuration depuis le fichier
+.I ${prefix}/etc/inotify-daemon.conf
+(ou le fichier spécifié par l'option
+.B -C
+sur la ligne de commande).
+.PP
+.SS Structure du fichier
+Le fichier de configuration est un fichier texte (ASCII).
+.PP
+Les lignes vides, ou remplies uniquement de caractères blanc, sont ignorées.
+.PP
+Les lignes dont le premier caractère non blanc est un dièse (
+.B #
+) sont ignorées (commentaires)
+.PP
+Les mots clés sont insensibles à la casse.
+.PP
+Chaque ligne est une directive, c'est à dire, un mot clé suivit d'éventuels arguments séparés
+par des espaces ou tabulations.
+.PP
+Certaines de ces directives sont des sections (groupes de directives).
+.PP
+Une section commence par une ligne contenant une directive de section et se termine par une ligne
+contenant uniquement le mot clé
+.B end
+. Certaines sections peuvent être imbriquées.
+.PP
+Exemple de section simple :
+.PP
+.EX
+directory /var/lib/input
+   event close_write echo "Nouveau fichier %D/%F
+end
+.EE
+.PP
+Exemple de sections imbriquées :
+.PP
+.EX
+settings
+  ...
+  logging file
+    set filename /var/log/inotify-daemon.log
+    ...
+  end
+  ...
+end
+.EE
+.PP
+Les directives de plus haut niveau sont :
+.TP 15
+.B settings
+Directive unique, généralementè en entête du fichier de configuration principal, initiant une section
+définissant les comportements globaux d'
+.BR inotify-daemon(8)
+.TP
+.B directory
+Directive définissant une section dans laquelle sont spécifiées, pour un répertoire donné, les actions
+à engager lors de la reception d'événements.
+.TP
+.B include
+Inclusion de fichiers contenant des bouts de configuration.
+.PP
+.SH Les types d'arguments des directives
+.SS Présentation
+Certaines directives prennent des arguments ayant une sémantique spécifique.
+.PP
+Ces types d'arguments sont les suivants :
+.PP
+.TP 10
+Les booleens
+.TP
+Les entiers
+.TP
+Les énumérés
+.TP
+Les combinaisons d'énumérés
+.SS Les arguments de type booleens
+Les arguments de type booleens son utilisés comme des interrupteurs. Leurs valeurs possibles sont
+.B vrai
+et
+.B faux
+.BR
+Pour désigner ces valeurs dans le fichier de configuration, les possibilités sont les suivantes :
+.TP 10
+pour vrai
+.B on true yes
+.TP
+pour faux
+.B off false no
+.SS Les arguments de type entier
+Certaines directive exigent qu’un ou plusieurs de ses arguments soit une valeur entière positive.
+.PP
+Ces valeurs peuvent être en octal, décimal, ou hexadécimal.
+.PP
+.PP
+Si la valeur indiquée commence par un zéro (0), la valeur sera considéré comme octale.
+.PP
+Si la valeur indiquée commence par 0x, la valeur sera considérée comme hexadécimale.
+.PP
+Toute autre valeur sera considéré comme décimale.
+.PP
+Exemple, pour la valeur (10)d , le possibilités sont le suivantes :
+.PP
+.TP 20
+décimal
+.B 10
+.TP
+octal
+.B 012
+.TP
+hexadécimal
+.B 0x0A
+ou
+.B 0x0A
+.SS Les arguments de type énumérés
+Certaines directives nécessites un ou plusieurs arguments d'un type énuméré. Un argument de ce type attend
+donc une valeur appartenant à une liste prédéfinie.
+.PP
+Dans ce cas, se reporter à la directive pour connaitre les valeurs possibles.
+.SS Les combinaisons d'énumérés
+Certaines directives qui exigent qu’un ou plusieurs de ses arguments soit choisi parmi des valeurs
+prédéfinies accepte des combinaisons de ces valeurs.
+.PP
+Ces valeurs ne sont pas sensibles à la casse.
+.PP
+Dans ce cas, les différentes valeurs sont placées les unes à la suite des autres, séparés par une
+virgume (
+.B ,
+) ou par une barre verticale (
+.B |
+) sans espaces ni tabulations.
+.PP
+Exemple dans le cas de la directive “event” :
+.EX
+event close_write|close_nowrite echo "file %D/%F closed" >&2
+event close_write,close_nowrite echo "file %D/%F closed" >&2
+.EE
+.SH La directive SETTINGS
+.SS Présentation
+Cette directive indique le début de la section dans laquelle les comportements globaux (hors
+gestion des évenements sur les répertoires) sont définis.
+.P
+Cette directive ne prend pas d'arguments.
+.SS Les sous directives de SETTINGS
+Les sous directives de la section settings sont les suivantes :
+.TP 10
+.B PIDFILE
+Indique le fichier à utiliser pour consigner l’identifiant processus du démon en cours
+d’exécution.
+.TP
+.B LOGGING
+Indique le début de la sous section dans laquelle est défini les consignation dans les
+journaux système.
+.SS La directive PIDFILE
+Cette directive prend, en unique argument, le chemin absolu du fichier qui devra contenir
+l’identifiant du processus (PID) lorsque le démon s’exécute.
+.PP
+La valeur par défaut est /var/run/inotify-daemon.pid
+.SS La directive LOGGING
+Cette directive permet de définir une section dans laquelle est indiqué comment
+.BR inotify-daemon(8)
+consigne ses traces applicatives (logs).
+.PP
+Cette directive prend, en unique argument, le pilote à utiliser pour consigner la consignation
+des traces applicatives. Pour plus d'informations se reporter à la section "Gestion des logs".
+.PP
+Dans une section
+.B LOGGING
+les directives suivantes sont acceptées :
+.TP 10
+.B LEVEL
+Défini le niveau à partie duquel les traces applicatives sont consignées.
+.TP
+.B SET
+Définit une option de la consignation des traces.
+.SS La directive LEVEL
+Cette directive prend, en argument, le niveau minimal des traces applicatives
+qui seront consignées
+.PP
+Les niveaux possibles sont les suivants :
+.TP 10
+.B ALERT
+Une action doit être prise immediatement.
+.TP
+.B CRIT
+Confition critique
+.TP
+.B DEBUG
+Informations de deboggage
+.TP
+.B EMERG
+Le système n'est plus utilisable
+.TP
+.B ERROR
+Message d'erreur
+.TP
+.B INFO
+Message informatif
+.TP
+.B NOTICE
+Message normal mais significatif
+.TP
+.B WARNING
+Message nécessitant une attention particulière
+.SS La directive SET
+Cette directive permet de définir une option du système de
+consignation des traces. Elle prend deux arguments :
+.TP 10
+.B option
+Le nom de l'option.
+.TP
+.B valeur
+La valeur assignée à l'option
+.PP
+Pour plus d'informtations se reporter à la section "Gestion des logs".
+.SH La directive DIRECTORY
+.SS Présentation
+Cette directive permet d'ouvrir une section dans laquelle sont
+définies les actions devant être ex@'ecut@'ees lorsque des
+événements sont générés au sein d'un répertoire donné.
+.PP
+Cette directive prend, en unique argument, le chemin du répertoire devant
+être surveillé.Elle s'utilise comme suit :
+.EX
+directory nom-répertoire
+  ...
+end
+.EE
+Cette section accepte les directives suivantes :
+.TP 10
+.B USER
+Utilisateur sous l'identité duquel seront exécutées les actions définies.
+.B GROUP
+Groupe sous l'identité duquel seront exécutées les actions définies.
+.B SHELL
+Shell devant être utilisé pour exécuter les actions définies.
+.B EVENT
+Définition d'une action pour un ou plusieurs événements.
+.SH La directive USER
+Cette directive permet d'indiquer l'identité utilisateur (
+.B UID
+) sous laquelle seron exécuté les actions.
+.PP
+Elle prend, en argument, soit un entier, soit le nom d'un utilisateur du système.
+Elle s'utilise donc comme suit :
+.PP
+.EX
+  user nom-utilisateur
+.EE
+ou
+.EX
+  user entier-positif
+.EE
+.PP
+La valeur par défaut est
+.B nobody
+soit l'UID 65534.
+.SH La directive GROUP
+Cette directive permet d'indiquer l'identité groupe (
+.B GID
+) sous laquelle seront exécutées les actions.
+.PP
+Elle prend en argument, soit un entier positif, soit le nom d'un groupe du système.
+Elle s'utilise comme suit :
+.PP
+.EX
+  group nom-group
+.EE
+ou
+.EX
+  group entier-positif
+.EE
+.PP
+La valeur par défaut est
+.B nogroup
+soit le GID 65534.
+.SH La directive SHELL
+Cette directive indique quel langage de commande (shell) utiliser pour
+interpréter la commande. Le shell par défaut est 
+.B /bin/sh
+.PP
+Cette directive prend, en argument, le chemin d'accès de l'interpréteur devant
+être utilisé. Elle s'utilise comme suit :
+.PP
+.EX
+  shell chemin-de-l-interpréteur
+.EE
+.SH La directive EVENT
+Cette directive permet de définir, pour un ou plusieurs événements sur le répertoire scruté,
+l'action à effectuer.
+.PP
+Cette directive prend deux arguments :
+.TP 15
+.B événements
+Evénement ou combinaison d'événements entrainant l'exécution de l'action.
+.TP
+.B action
+L'action devant être exécutée lors de la réception de l'événement (ou l'un des événements) défini
+dans le premier arguent.
+A noter, que cet argument commence avec le premier caractène non blanc après le premier argument et
+se termine à la fin de la ligne, incorporant, ainsi, l'ensemble des blancs inclus.
+.PP
+Afin de discriminer les actions en fonction des événements, plusieurs directives
+.B EVENT
+peuvent cohabiter au sein d'une même section
+.B DIRECTORY
+.PP
+Deux directives
+.B EVENT
+d'une même section
+.B DIRECTORY
+ne peuvent partager le même événement.
+.PP
+Cette directive s'utilise donc comme suit :
+.PP
+.EX
+  event événements action
+.EE
+.PP
+Les événements reconus sont les suivants :
+.TP 15
+.B ACCESS
+Le fichier à l'origine de l'événement à été accédé en lecture.
+.TP
+.B ATTRIB
+Les métadonnées du fichier à l'origine de l'événement (droits, propriété, etc.) ont été modifiées.
+.TP
+.B CLOSE
+Equivalent à
+.B CLOSE_WRITE|CLOSE_NOWRITE
+.TP
+.B CLOSE_NOWRITE
+Le fichier à l'origine de l'événement vient d'être fermé après avoir été ouvert en lecture seule.
+.TP
+.B CLOSE_WRITE
+Le fichier à l'origine de l'événement vient d'être fermé après avoir été ouvert en écriture.
+.TP
+.B CREATE
+Le fichier à l'origine de l'événement vient d'être créé.
+.TP
+.B DELETE
+Le fichier à l'origine de l'événement vient d'être supprimé.
+.TP
+.B DELETE_SELF
+Le répertoire en cours de scrutation vient d'être supprimé.
+.TP
+.B MODIFY
+Le fichier à l'origine de l'événement vient d'être modifié.
+.TP
+.B MOVE_SELF
+Le répertoire en cours de scrutation vient d'être déplacé ou a changé de nom.
+.TP
+.B OPEN
+Le fichier à l'origine de l'événement vient d'être ouvert.
+.TP
+.B RENAME
+Le fichier à l'origine de l'événement a changé de nom.
+.PP
+L'action est une chaîne de caractères ayant des directives de formes. A l'exception du caractère
+pourcent (
+.B %
+) qui est réservé pour les remplacement, les caractères sont pris en compte tel quel.
+.PP
+le caractère pourcent (
+.B %
+) permet de définir des remplacement en fonction du (des) caractère(s) qui le suit (suivent).
+Ces remplacements sont les suivants :
+.TP 5
+.B c
+"Cookie" associé à l'événement en décimal. Ce "Cookie" n'a de sens que lors d'un événement
+.B RENAME
+.TP
+.B cb
+"Cookie" associé à l'événement en binaire sur 32 chiffres. Ce "Cookie" n'a de sens que lors d'un événement
+.B RENAME
+.TP
+.B cd
+Idem
+.B c
+.TP
+.B co
+"Cookie" associé à l'événement en octal sur 11 chiffres. Ce "Cookie" n'a de sens que lors d'un événement
+.B RENAME
+.TP
+.B cX
+"Cookie" associé à l'événement en hexadécimal sur 8 caractères majuscules.
+Ce "Cookie" n'a de sens que lors d'un événement
+.B RENAME
+.TP
+.B cx
+"Cookie" associé à l'événement en hexadécimal sur 8 caractères minuscules.
+Ce "Cookie" n'a de sens que lors d'un événement
+.B RENAME
+.TP
+.B D
+Nom du répertoire dans lequel l'événement est survenu.
+.TP
+.B E
+Nom de l'événement.
+.TP
+.B e
+Le masque de l'événement en décimal
+.TP
+.B eb
+Le masque de l'événement en binaire sur 32 chiffres.
+.B ed
+Idem
+.B e
+.TP
+.B eo
+Le masque de l'événement en octal sur 11 chiffres.
+.TP
+.B ex
+Le masque de l'événement en hexadécimal sur 8 caractères minuscules.
+.TP
+.B eX
+Le masque de l'événement en hexadécimal sur 8 caractères majuscule.
+.TP
+.B F
+Le nom du fichier à l'origine de l'événement. Dans le cas de l'événement
+.B RENAME
+c'est le nouveau nom.
+.TP
+.B O
+L'ancien nom du fichier dans le cas d'un événement
+.B RENAME
+.PP
+Exemples :
+.EX
+  EVENT RENAME       echo "Le fichier %O a été renomé en %F" >&2
+  EVENT CLOSE_WRITE  ls -l %D/%F
+.EE
+.SH La directive INCLUDE
+Cette directive permet d'inclure des fichiers contenant des élémets de configurations complémentaires.
+Cette directive est pratique pour éviter, dans le cas où de nombreux répertoires sont scrutés,
+d'avoir de à traiter un très long fichier de configuration lorsque l'on doit ajouter, supprimer ou 
+modifier un répertoires scruté.
+.PP
+Cette directive prend, en unique argument, le nom d'un fichier ou un motif (pattern)
+.BR glob(7)
+Dans le cas d'un motif, l'ensemble des fichiers correspondants sont pris en compte en ordre alphabétique.
+.PP
+Elle s'utilise donc comme suit :
+.PP
+.EX
+  include nom-fichier
+ou
+  include motif
+.EE
+.PP
+Exemples :
+.TP 25
+.B include /etc/foobar
+Inclu les éléments de configuration dans le fichier /etc/foobar
+.TP
+.B include /etc/id/*.conf
+Inclu l'ensemble des fichiers du répertoire
+.B /etc/id
+dont le nom se termine par ".conf"
+.PP
+.SH Gestion des logs
+.SS A propos des niveaux
+.B ##########################################################################
+.SS Les pilotes
+.B ##########################################################################
+.SS les options globales
+.B ##########################################################################
+.SS les options spécifique au pilote DEFAULT
+.B ##########################################################################
+.SS les options spécifique au pilote FILE
+.B ##########################################################################
+.SS les options spécifique au pilote SYSLOG
+.B ##########################################################################
