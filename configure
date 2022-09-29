@@ -2270,7 +2270,7 @@ ac_config_headers="$ac_config_headers src/ind_config.h"
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking Operating system name" >&5
 $as_echo_n "checking Operating system name... " >&6; }
 OS_NAME=`uname -s`
-test "$OS_NAME" == 'Linux' || as_fn_error $? "" "$LINENO" 5 "Operatins system '$OS_NAME' is not supported"
+test "$OS_NAME" == 'Linux' || as_fn_error $? "" "$LINENO" 5 "Operatings system '$OS_NAME' is not supported"
 
 # Checks for programs.
 ac_ext=cpp

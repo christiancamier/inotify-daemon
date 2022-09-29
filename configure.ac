@@ -23,7 +23,7 @@ AC_CONFIG_HEADERS([src/ind_config.h])
 
 AC_MSG_CHECKING([Operating system name])
 OS_NAME=`uname -s`
-test "$OS_NAME" == 'Linux' || AC_MSG_ERROR "Operatins system '$OS_NAME' is not supported"
+test "$OS_NAME" == 'Linux' || AC_MSG_ERROR "Operatings system '$OS_NAME' is not supported"
 
 # Checks for programs.
 AC_PROG_CXX
