@@ -15,6 +15,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ind_config.h"
+
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>

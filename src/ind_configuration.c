@@ -15,6 +15,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ind_config.h"
+
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -30,8 +32,8 @@
 #include <pwd.h>
 #include <grp.h>
 
-#include "cc_log.h"
-#include "cc_pidfile.h"
+#include <CCR/cc_log.h>
+#include <CCR/cc_pidfile.h>
 
 #include "inotify-daemon.h"
 #include "ind_tunables.h"

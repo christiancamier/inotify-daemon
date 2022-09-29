@@ -15,6 +15,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ind_config.h"
+
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -25,9 +27,9 @@
 #include <strings.h>
 #include <stdio.h>
 
-#include "cc_fmt.h"
-#include "cc_log.h"
-#include "cc_str2bool.h"
+#include <CCR/cc_fmt.h>
+#include <CCR/cc_log.h>
+#include <CCR/cc_str2bool.h>
 
 static int  file_sopt (const char *, const char *, int);
 static void file_open (void);

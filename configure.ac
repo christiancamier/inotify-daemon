@@ -19,7 +19,7 @@
 AC_PREREQ([2.69])
 AC_INIT([inotify-daemon], [0.1], [christian.c@promethee.services])
 AC_CONFIG_SRCDIR([src/inotify-daemon.c])
-AC_CONFIG_HEADERS([src/config.h])
+AC_CONFIG_HEADERS([src/ind_config.h])
 
 AC_MSG_CHECKING([Operating system name])
 OS_NAME=`uname -s`
@@ -48,8 +48,17 @@ AC_CHECK_PROG(HAVE_TEXI2PDF, [texi2pdf], [yes], [no])
 AC_SUBST(have_texi2pdf, $HAVE_TEXI2PDF)
 test "$HAVE_TEXI2ANY" == "non" && AC_MSG_NOTICE("PDF documentation will not be built")
 
+# Gets the libCCR needed for compilation
+if   test -d libCCR
+then :
+else
+  AC_MSG_NOTICE("Getting LibCCR")
+  git clone https://github.com/christiancamier/libCCR.git || AC_MSG_ERROR([Cannot retrieve libCCR from github])
+  chmod +x libCCR/configure                               || AC_MSG_ERROR([There is a problem with libCCR/configure])
+fi
+
 # Makefiles substitutions
-AC_SUBST(topdir, `pwd -P`)
+AC_SUBST(topdir, `pwd`)
 
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h limits.h paths.h stdint.h stdlib.h string.h strings.h sys/param.h syslog.h unistd.h])
@@ -75,15 +84,6 @@ AC_CONFIG_FILES([Makefile
 		 doc/Makefile
                  doc/en/Makefile
 		 doc/fr/Makefile])
-
-# Gets the libCCR needed for compilation
-if   test -d libCCR
-then :
-else
-  AC_MSG_NOTICE("Getting LibCCR")
-  git clone https://github.com/christiancamier/libCCR.git || AC_MSG_ERROR([Cannot retrieve libCCR from github])
-  chmod +x libCCR/configure                               || AC_MSG_ERROR([There is a problem with libCCR/configure])
-fi
 
 AC_CONFIG_SUBDIRS([libCCR])
 AC_OUTPUT

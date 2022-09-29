@@ -13,34 +13,8 @@
 #  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 #  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-#
-# Target directories definitions
-#
-#!START
-PREFIX        ?= @prefix@
-prefix        ?= @prefix@
-exec_prefix   ?= @exec_prefix@
-bindir        ?= @bindir@
-sbindir       ?= @sbindir@
-sysconfdir    ?= @sysconfdir@
-sbindir       ?= @sbindir@
-includedir    ?= @includedir@
-oldincludedir ?= @oldincludedir@
-libdir        ?= @libdir@
-libexecdir    ?= @libexecdir@
-datarootdir   ?= @datarootdir@
-mandir        ?= @mandir@
-man1dir       ?= $(mandir)/man1
-man3dir       ?= $(mandir)/man3
-docdir        ?= @docdir@
-infodir       ?= @infodir@
-localstatedir ?= @localstatedir@
-localedir     ?= @localedir@
-htmldir       ?= @htmldir@
-dvidir        ?= @dvidir@
-pdfdir        ?= @pdfdir@
-psdir         ?= @psdir@
-#!END
+
+include @topdir@/Makefile.inc
 
 #
 # Behaviour options
@@ -50,39 +24,14 @@ MACROS =				\
 	-DSYSCONFDIR=\"$(sysconfdir)\"	\
 	-DPREFIX=\"$(prefix)\"
 
+#
 # Compilers options
 #
 
 MAKE    ?= make
 SUBMAKE  = $(MAKE) -f Makefile
 CC	?= LANG=C gcc
-CFLAGS	?= -g -Wall -Wunused-variable -Werror -I. -I../libCCR $(MACROS)
-
-
-INSTALL      = install
-INSTALL_SBIN = $(INSTALL) -o root -g root -m 755 -t $(DESTDIR)$(sbindir)
-INSTALL_MAN1 = $(INSTALL) -o bin  -g bin  -m 644 -t $(DESTDIR)$(man1dir)
-
-#
-# Compilation rules
-#
-
-.SUFFIXES: .c .o .i .sh .po
-
-.c.o:
-	$(CC) $(CFLAGS) -c $<
-
-.c.po:
-	$(CC) -fPIC $(CFLAGS) -c -o $@ $<
-
-.c.i:
-	$(CC) $(CFLAGS) -E $< > $@
-
-.sh:
-	cp $< $@
-
-.py:
-	cp $< $@
+CFLAGS	?= -g -Wall -Wunused-variable -Werror -I../libCCR/include $(MACROS)
 
 
 CSRCS	= $(shell echo *.c)
@@ -114,7 +63,7 @@ install.sbin: $(SBINS)
 	done
 
 inotify-daemon: $(COBJS)
-	$(CC) $(LDOPTS) -o $@ $(COBJS) ../libCCR/libCCR.a
+	$(CC) $(LDOPTS) -o $@ $(COBJS) ../libCCR/lib/libCCR.a
 
 ind_command.o:		ind_command.c		inotify-daemon.h ind_tunables.h
 ind_configuration.o:	ind_configuration.c	inotify-daemon.h ind_tunables.h

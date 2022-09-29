@@ -15,6 +15,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ind_config.h"
+
 #define _GNU_SOURCE
 
 #include <sys/types.h>
@@ -29,9 +31,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "cc_fmt.h"
-#include "cc_forcefork.h"
-#include "cc_log.h"
+#include <CCR/cc_fmt.h>
+#include <CCR/cc_forcefork.h>
+#include <CCR/cc_log.h>
 
 #include "inotify-daemon.h"
 #include "ind_tunables.h"

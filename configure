@@ -2264,7 +2264,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-ac_config_headers="$ac_config_headers src/config.h"
+ac_config_headers="$ac_config_headers src/ind_config.h"
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking Operating system name" >&5
@@ -3679,8 +3679,18 @@ have_texi2pdf=$HAVE_TEXI2PDF
 test "$HAVE_TEXI2ANY" == "non" && { $as_echo "$as_me:${as_lineno-$LINENO}: \"PDF documentation will not be built\"" >&5
 $as_echo "$as_me: \"PDF documentation will not be built\"" >&6;}
 
+# Gets the libCCR needed for compilation
+if   test -d libCCR
+then :
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: \"Getting LibCCR\"" >&5
+$as_echo "$as_me: \"Getting LibCCR\"" >&6;}
+  git clone https://github.com/christiancamier/libCCR.git || as_fn_error $? "Cannot retrieve libCCR from github" "$LINENO" 5
+  chmod +x libCCR/configure                               || as_fn_error $? "There is a problem with libCCR/configure" "$LINENO" 5
+fi
+
 # Makefiles substitutions
-topdir=`pwd -P`
+topdir=`pwd`
 
 
 # Checks for header files.
@@ -4562,16 +4572,6 @@ done
 ac_config_files="$ac_config_files Makefile Makefile.inc src/Makefile doc/Makefile doc/en/Makefile doc/fr/Makefile"
 
 
-# Gets the libCCR needed for compilation
-if   test -d libCCR
-then :
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: \"Getting LibCCR\"" >&5
-$as_echo "$as_me: \"Getting LibCCR\"" >&6;}
-  git clone https://github.com/christiancamier/libCCR.git || as_fn_error $? "Cannot retrieve libCCR from github" "$LINENO" 5
-  chmod +x libCCR/configure                               || as_fn_error $? "There is a problem with libCCR/configure" "$LINENO" 5
-fi
-
 
 
 subdirs="$subdirs libCCR"
@@ -5266,7 +5266,7 @@ cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
 for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
-    "src/config.h") CONFIG_HEADERS="$CONFIG_HEADERS src/config.h" ;;
+    "src/ind_config.h") CONFIG_HEADERS="$CONFIG_HEADERS src/ind_config.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "Makefile.inc") CONFIG_FILES="$CONFIG_FILES Makefile.inc" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;

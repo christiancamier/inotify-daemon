@@ -40,18 +40,18 @@ clean distclean: Force
 	done
 	$(SUBMAKE) _$@
 
-_distclean: _clean
-	rm -fr Makefile Makefile.inc
-	rm -fr config.log config.status
-	rm -fr autom4te.cache
-	rm -fr libCCR
+_all: Force
+	:
 
 _clean: Force
 	rm -fr $(ALL) $(COBJS) autom4te.cache
 	rm -fr *~ \#* *.i
 
-_all: Force
-	:
+_distclean: _clean
+	rm -fr Makefile Makefile.inc
+	rm -fr config.log config.status
+	rm -fr autom4te.cache
+	rm -fr libCCR
 
 _install:
 	$(INSTALL_DOC) changelog

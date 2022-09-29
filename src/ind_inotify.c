@@ -15,6 +15,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ind_config.h"
+
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/inotify.h>
@@ -23,9 +25,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "cc_fmt.h"
-#include "cc_log.h"
-#include "cc_nextopt.h"
+#include <CCR/cc_fmt.h>
+#include <CCR/cc_log.h>
+#include <CCR/cc_nextopt.h>
 
 #include "inotify-daemon.h"
 

@@ -15,6 +15,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ind_config.h"
+
 #include <sys/types.h>
 #include <sys/signalfd.h>
 #include <sys/wait.h>
@@ -24,10 +26,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "cc_log.h"
+#include <CCR/cc_log.h>
 
 #include "inotify-daemon.h"
-//#include "ind_tunables.h"
 
 extern int  in_signal_init(void);
 extern void in_signal_process(void);
