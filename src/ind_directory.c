@@ -93,8 +93,8 @@ in_status_t in_directory_create(const char *pathname, in_directory_t **retv)
 	newdir->dir_shell    = NULL;
 	newdir->dir_dev      = dinfo->st_dev;
 	newdir->dir_ino      = dinfo->st_ino;
-	newdir->dir_uid      = -1;
-	newdir->dir_gid      = -1;
+	newdir->dir_uid      = (uid_t)-1;
+	newdir->dir_gid      = (gid_t)-1;
 	newdir->dir_wd       = -1;
 	newdir->dir_mask     =  0;
 	newdir->dir_nactions =  0;

@@ -40,40 +40,241 @@
 .SS Global view
 .BR inotify-daemon (8)
 reads configuration data from
-.I %PREFIX%/etc/inotify-daemon.conf
+.I ${prefix}/etc/inotify-daemon.conf
 (or the file specified with
 .B -C
 on the command line).
 .PP
-Blank lines, composed only of white characters or whose first non-white
-character is a sharp (
+.SS File structure
+The configuration file is an ASCII encoded text file.
+.PP
+Blank lines, or filled only with white characters, are ignored.
+.PP
+Lines whose first non-white character is a sharp (
 .B #
-) are ignored.
+) are ignored (comments).
 .PP
-The keywords are case insensitive.
+Each line is a directive. A directive is a keyword followed by possible arguments.
+Arguments are separated by one ore more spaces or tabs.
 .PP
-The file consists of several sections. A section starts with a line starting
-with the keyword
-.B settings
-or the keyword
-.B directory
-and ends with a line containing only the keyword
-.B end
-\.
+Some of these directives are sections (groups of directives).
 .PP
-The different types of section are:
-.IP
-The
-.B settings
-section defines the overall behavior of the daemon.
-.IP
-The
-.B directory
-sections indicate the actions to be performed when events occurring on a directory.
-.SS The 'settings' section
-This section defines the general behavior of inotify-daemon.
-This section determines the
-.I pidfile
-and
-.I logging
-.SS the 'directory' sections
+A section begins with a line containing a section directive and ends with a line
+containing only the key word
+.B END
+.PP
+Some sections can be nested.
+.PP
+Example of a simple section:
+.PP
+.EX
+directory /var/lib/input
+   event close_write echo "New file %D/%F
+end
+.EE
+.PP
+Example of nested sections :
+.PP
+.EX
+settings
+  ...
+  logging file
+    set filename /var/log/inotify-daemon.log
+    ...
+  end
+  ...
+end
+.EE
+.PP
+The main directives are :
+.TP 15
+.B SETTINGS
+Single directive, usually in the header of the main configuration file, initiating a section
+defining global behaviours
+.BR inotify-daemon(8)
+.TP
+.B DIRECTORY
+Directive defining a section in which, for a given directory, actions are specified
+to be engaged when hosting events.
+.TP
+.B INCLUDE
+Inclusion of files containing configuration tips.
+.PP
+.SH Types of arguments in directives
+.SS Presentation
+Some of directives take arguments with a spécific semantic
+.PP
+These arguments types are:
+.PP
+.TP 10
+Booleans
+.TP
+Integers
+.TP
+Enumerated
+.TP
+Combinaison of enumerated
+.SS Booleans arguments
+Arguments of type booleens are used as switches. Possible values are
+.B true
+ans
+.B false.
+.BR
+To designate these values in the configuration file, the possibilities are as follows:
+.TP 12
+for true
+.B ON TRUE YES
+.TP
+for false
+.B OFF FALSE NO
+.SS Integers arguments
+Some directives require that one or more of its arguments be a positive integer value.
+.PP
+These values can be in octal, decimal or hexadecimal.
+.PP
+If the indicated value begins with a zero (0), the value will be interpreted as octal.
+.PP
+If the indicated value begins with 0x, the value will be interpreted as hexadecimal.
+.PP
+All other value will be interpreted as decimal.
+.PP
+For example, for the value (10)d, possibilities are as follow:
+.PP
+.TP 20
+decimal
+.B 10
+.TP
+octal
+.B 012
+.TP
+hexadecimal
+.B 0x0a
+or
+.B 0x0A
+.SS Enumerated arguments
+Some directives require one or more arguments of a listed type. An argument of this type awaits
+therefore a value belonging to a predefined list.
+.PP
+In this case, refer to the directive for possible values.
+.PP
+Enumerated arguments are case insensitive.
+.SS Combinaison of enumerated
+Some directives, which require that one or more of its arguments be chosen from among values
+predefined, accept combinations of these values.
+.PP
+In this case, the different values are placed one after the other, separated by a
+comma (
+.B ,
+) or by a pipe (
+.B |
+)
+withour spaces or tabs.
+.PP
+For example, for the directive "event":
+.EX
+event close_write|close_nowrite echo "file %D/%F closed" >&2
+event close_write,close_nowrite echo "file %D/%F closed" >&2
+.EE
+.SH The SETTINGS directive
+.SS Presentation
+This directive indicates the beginning of the section in which the overall behaviours (excluding
+management of events on directories) are defined.
+.SS SETTINGS sub directives
+SETTINGS sub directivs are the following:
+.TP 10
+.B PIDFILE
+Indicates the file where the process identifier (pid) of the running daemon is stored.
+.TP
+.B LOGGING
+Indicate the beginning os a sub section where logging is defined.
+.SS The PIDFILE directive
+This directive takes, as single argument, the absolute path of the file that should contain
+the process identifier (PID) when the daemon runs.
+.PP
+The default value is :
+.B /var/run/inotify-daemon.pid
+.SS The LOGGING directive
+This directive define a section where are defined how messages will be logged.
+.PP
+This directive takes, as single argument, the loggin driver to use. For more
+information refer to the "Logging management" section.
+.PP
+In 
+.B LOGGING
+section, the followed directives are allowed:
+.TP 10
+.B LEVEL
+Defines the level at which messages are logged.
+.TP
+.B SET
+Defines a logging option.
+.SS The LEVEL dircetive
+These directive takes, as single argument, the minimal level of messages that
+will be logged.
+.PP
+Possible levels are:
+.B ALERT
+Action must be taken immediately
+.TP
+.B CRIT
+Critical condition
+.TP
+.B DEBUG
+Debug-level message.
+.TP
+.B EMERG
+system is unusable.
+.TP
+.B ERROR
+Error condition.
+.TP
+.B INFO
+Informational message.
+.TP
+.B NOTICE
+Normal, but significant, condition.
+.TP
+.B WARNING
+Warning Conditions.
+.SS The SET directive
+These directive allows to define an option for the logging system. It takes
+two arguments:
+.TP 10
+.B option
+The option name
+.TP
+.B valeur
+The option value
+.PP
+For more information refet to the "Logging management" section.
+.SH The DIRECTORY directive
+.SS Presentation
+These directive beggins a section where are defined actions that will be executed
+when events occur in a given directory.
+.PP
+These directive takes, as single argument, the absolute path of the scanned directory.
+It is used as follow:
+.EX
+directory directory-path
+  ...
+end
+.EE
+These section acecpt the following directives:
+.TP 10
+.B USER
+User ID that will be used to execute actions.
+.TP
+.B GROUP
+Group ID that will be used to execute actions.
+.TP
+.B SHELL
+Shell interpreter that will be used to execute actions.
+.TP
+.B EVENT
+Defines an action for one or more events.
+.SS The USER directive
+
+
+
+
+

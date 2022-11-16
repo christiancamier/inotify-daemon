@@ -9,8 +9,8 @@
 .\" incompatible with the protocol description in the RFC file, it must be
 .\" called by a name other than "ssh" or "Secure Shell".
 .\"
-.\" Copyright (c) 2020 Christian CAMIER.  All rights reserved.
-.\" Copyright (c) 2020 Promethée Services Campbell.  All rights reserved.
+.\" Copyright (c) 2022 Christian CAMIER.  All rights reserved.
+.\" Copyright (c) 2022 Promethée Services.  All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
@@ -63,7 +63,7 @@ Certaines de ces directives sont des sections (groupes de directives).
 .PP
 Une section commence par une ligne contenant une directive de section et se termine par une ligne
 contenant uniquement le mot clé
-.B end
+.B END
 . Certaines sections peuvent être imbriquées.
 .PP
 Exemple de section simple :
@@ -122,17 +122,16 @@ et
 .B faux
 .BR
 Pour désigner ces valeurs dans le fichier de configuration, les possibilités sont les suivantes :
-.TP 10
-pour vrai
-.B on true yes
+.TP 12
+pour vrai:
+.B ON TRUE YES
 .TP
-pour faux
-.B off false no
+pour faux:
+.B OFF FALSE NO
 .SS Les arguments de type entier
-Certaines directive exigent qu’un ou plusieurs de ses arguments soit une valeur entière positive.
+Certaines directive exigent qu'un ou plusieurs de ses arguments soit une valeur entière positive.
 .PP
 Ces valeurs peuvent être en octal, décimal, ou hexadécimal.
-.PP
 .PP
 Si la valeur indiquée commence par un zéro (0), la valeur sera considéré comme octale.
 .PP
@@ -150,7 +149,7 @@ octal
 .B 012
 .TP
 hexadécimal
-.B 0x0A
+.B 0x0a
 ou
 .B 0x0A
 .SS Les arguments de type énumérés
@@ -158,20 +157,20 @@ Certaines directives nécessites un ou plusieurs arguments d'un type énuméré.
 donc une valeur appartenant à une liste prédéfinie.
 .PP
 Dans ce cas, se reporter à la directive pour connaitre les valeurs possibles.
-.SS Les combinaisons d'énumérés
-Certaines directives qui exigent qu’un ou plusieurs de ses arguments soit choisi parmi des valeurs
-prédéfinies accepte des combinaisons de ces valeurs.
 .PP
 Ces valeurs ne sont pas sensibles à la casse.
+.SS Les combinaisons d'énumérés
+Certaines directives, qui exigent qu'un ou plusieurs de ses arguments soit choisi parmi des valeurs
+prédéfinies, acceptent des combinaisons de ces valeurs.
 .PP
 Dans ce cas, les différentes valeurs sont placées les unes à la suite des autres, séparés par une
-virgume (
+virgule (
 .B ,
 ) ou par une barre verticale (
 .B |
 ) sans espaces ni tabulations.
 .PP
-Exemple dans le cas de la directive “event” :
+Exemple dans le cas de la directive "event" :
 .EX
 event close_write|close_nowrite echo "file %D/%F closed" >&2
 event close_write,close_nowrite echo "file %D/%F closed" >&2
@@ -183,18 +182,18 @@ gestion des évenements sur les répertoires) sont définis.
 .P
 Cette directive ne prend pas d'arguments.
 .SS Les sous directives de SETTINGS
-Les sous directives de la section settings sont les suivantes :
+Les sous directives de la section SETTINGS sont les suivantes :
 .TP 10
 .B PIDFILE
-Indique le fichier à utiliser pour consigner l’identifiant processus du démon en cours
-d’exécution.
+Indique le fichier à utiliser pour consigner l'identifiant processus du démon en cours
+d'exécution.
 .TP
 .B LOGGING
 Indique le début de la sous section dans laquelle est défini les consignation dans les
 journaux système.
 .SS La directive PIDFILE
 Cette directive prend, en unique argument, le chemin absolu du fichier qui devra contenir
-l’identifiant du processus (PID) lorsque le démon s’exécute.
+l'identifiant du processus (PID) lorsque le démon s'exécute.
 .PP
 La valeur par défaut est /var/run/inotify-daemon.pid
 .SS La directive LOGGING
@@ -224,7 +223,7 @@ Les niveaux possibles sont les suivants :
 Une action doit être prise immediatement.
 .TP
 .B CRIT
-Confition critique
+Condition critique
 .TP
 .B DEBUG
 Informations de deboggage
@@ -257,11 +256,11 @@ Pour plus d'informtations se reporter à la section "Gestion des logs".
 .SH La directive DIRECTORY
 .SS Présentation
 Cette directive permet d'ouvrir une section dans laquelle sont
-définies les actions devant être ex@'ecut@'ees lorsque des
+définies les actions devant être exécutées lorsque des
 événements sont générés au sein d'un répertoire donné.
 .PP
-Cette directive prend, en unique argument, le chemin du répertoire devant
-être surveillé.Elle s'utilise comme suit :
+Cette directive prend, en unique argument, le chemin absolu du répertoire
+devant être surveillé. Elle s'utilise comme suit :
 .EX
 directory nom-répertoire
   ...
@@ -271,16 +270,19 @@ Cette section accepte les directives suivantes :
 .TP 10
 .B USER
 Utilisateur sous l'identité duquel seront exécutées les actions définies.
+.TP
 .B GROUP
 Groupe sous l'identité duquel seront exécutées les actions définies.
+.TP
 .B SHELL
 Shell devant être utilisé pour exécuter les actions définies.
+.TP
 .B EVENT
 Définition d'une action pour un ou plusieurs événements.
-.SH La directive USER
+.SS La directive USER
 Cette directive permet d'indiquer l'identité utilisateur (
 .B UID
-) sous laquelle seron exécuté les actions.
+) sous laquelle seront exécutées les actions.
 .PP
 Elle prend, en argument, soit un entier, soit le nom d'un utilisateur du système.
 Elle s'utilise donc comme suit :
@@ -472,7 +474,7 @@ Exemples :
   EVENT CLOSE_WRITE  ls -l %D/%F
 .EE
 .SH La directive INCLUDE
-Cette directive permet d'inclure des fichiers contenant des élémets de configurations complémentaires.
+Cette directive permet d'inclure des fichiers contenant des éléments de configurations complémentaires.
 Cette directive est pratique pour éviter, dans le cas où de nombreux répertoires sont scrutés,
 d'avoir de à traiter un très long fichier de configuration lorsque l'on doit ajouter, supprimer ou 
 modifier un répertoires scruté.
@@ -501,14 +503,302 @@ dont le nom se termine par ".conf"
 .PP
 .SH Gestion des logs
 .SS A propos des niveaux
-.B ##########################################################################
+Les différents niveaux d'écriture dans les journaux systèmes sont
+directement calqués sur sur ceux proposés par
+.BR syslog(3)
+et utilisent la même priorité.
+.PP
+L'ordre de priorité des niveaux est le suivant :
+.TP 3
+.B ^
+(+haut)
+.TP
+.B |
+.B EMERG
+.TP
+.B |
+.B ALERT
+.TP
+.B |
+.B CRIT
+.TP
+.B |
+.B ERROR
+.TP
+.B |
+.B WARNING
+.TP
+.B |
+.B NOTICE
+.TP
+.B |
+.B INFO
+.TP
+.B |
+.B DEBUG
+.TP
+.B +
+(+bas)
+.PP
 .SS Les pilotes
-.B ##########################################################################
+La gestion des traces d'
+.B inotify-daemon
+peut consigner les information de différentes manières en
+fonction du pilote utilisé.
+.PP
+Les différents pilotes proosés sont le suivants :
+.TP 8
+.B DEFAULT
+Ce pilote redirige les informations consignées vers la sortie standard (
+.B STDOUT
+) ou la sortie d'erreur (
+.B STDERR
+) du terminal.
+.TP
+.B FILE
+Ce pilote redirige les messages vers un fichier.
+.TP
+.B SYSLOG
+Ce pilote redirige les messages vers le
+.BR syslog(3)
+.PP
+.B NOTE
+.IP
+Chaque pilote possède ses propres options.
+.PP
 .SS les options globales
-.B ##########################################################################
+Les options globales s'appliquent à l'ensemble des pilotes.
+Ces options sont les suivantes :
+.TP 12
+.B act err lvl
+Indique le niveau à utiliser pour consigner les messages écris sur la sortie
+d'erreur (
+.B STDERR
+) lorsqu'une action enclenchée par un événement se déroule.
+La valeur par défaut est :
+.B NOTICE
+.TP
+.B act out lvl
+Indique le niveau à utiliser pour consigner les messages écris sur la sortie
+standard (
+.B STDOUT
+) lorsqu'une action enclenchée par un événement se déroule.
+La valeur par défaut est :
+.B DEBUG
+.TP
+.B timestamp
+cette option permet de définir le format de l'horodatage des messages consignés dans
+le journal. L'argument est une cahîne de caractères dans le format défini par
+.BR strftime(3).
+La valeur par défaut est : 
+.B %d/%m/%Y %H:%M:%S
+.PP
+.B NOTE
+.IP
+Bien qu'acceptée, l'option
+.B timestamp
+n'est pas prise en compte par le pilote
+.B syslog
+qui impose son format d'horodatage.
 .SS les options spécifique au pilote DEFAULT
-.B ##########################################################################
-.SS les options spécifique au pilote FILE
-.B ##########################################################################
+La seule option du pilote
+.B DEFAULY
+est l'option
+.B CHANNEL.
+Cette option indique sur quel cannal doivent être redirigés les messages
+consignés.
+.PP
+Les valeurs possibles sont :
+.TP 7
+.B STDERR
+Les messages sont redirigné sur la sortie d'erreur.
+.TP
+.B STDOUT
+Les messages sont redirigés sur la sortie standard.
+.PP
+La valeur par défaut est :
+.B STDERR.
+.SS Les options spécifiques au pilote FILE
+Les différentes options prises en compte par le pilote
+.B FILE
+sont les suivantes :
+.TP 12
+.B FILENAME
+Nom du fichier.
+.TP
+.B MODE
+Mode de création du fichier.
+.TP
+.B STAYOPEN
+Maintient ou non du fichier ouvert entre deux écritures.
+.TP
+.B TIMESTAMPED
+Indicateur d'horodatage du nom de fichier.
+.PP
+L'option
+.B FILENAME
+permet de définir le nom du fichier dans lequel seront consignées les écritures.
+Ce nom de fichier est une chaîne de caractères, définissant un chemin d'accès
+absolu au fichier.
+Si l'option
+.B TIMESTAMPED
+(cf. ci-dessus) est positionnée à vrai, le noms de fichier sera interprété comme
+une chaîne de caractère horodatée au format
+.BR strftime(3).
+.PP
+La valeur par défaut est : 
+.B /var/log/inotify-daemon.log
+\.
+.PP
+A noter que cette valeur nécessite que l'option
+.B TIMESTAMPED
+soit positionnée à vrai pour prendre tout son sens.
+.PP
+L'option
+.B MODE
+définie le mode de création du fichier.
+La valeur est un nombre octal compris entre 000 et 777 qui indique les droits d'accès au
+fichier créé. Ces droits d'accès sont les m^emes que ceux définis par
+.BR chmod(2).
+Le mode de création par défaut des fichiers journaux est 
+.B 600
+, c'est à dire que le propriétaire à les droits d'écriture et lecture et que les membres du
+groupe et autres utilisateurs n'ont aucun droit.
+.PP
+L'option
+.B STAYOPEN
+Indique si le fichier doit rester ouvert entre deux écritures. Cette option prend une valeur
+booléenne et sa valeur par défaut est
+.B NO.
+Dans le cas où cette option est activé et que l'option
+.B TIMESTAMPED
+est positionnée, le nom du fichier est recalculé à chaque trace émise. Si le nom du fichier
+diffère, du précédent, l'ancien fichier est fermé et le nouveau fichier créé.
+.PP
+L'option 
+.B TIMESTAMPED
+indique si le nom du fichier contient des éléments d'horodatage. Cette option prend, en 
+argument, une valeur bouléenne. Sa valeur par défaut est :
+.B NO.
 .SS les options spécifique au pilote SYSLOG
-.B ##########################################################################
+Le pilote
+.B SYSLOG
+accepte les options suivantes :
+.TP 10
+.B FACILITY
+Facilité devant être utilisée par
+.BR syslog(3).
+.TP
+.B IDENT
+Identifiant utilisé par les traces émises dans le
+.BR syslog(3).
+.TP
+.B OPTIONS
+Options de
+.B syslog(3).
+.PP
+L'option
+.B FACILITY
+permet de définir la facilité 
+.BR syslog(3)
+qui sera utilisée pour les messages.
+Les valeurs possibles sont les suivantes :
+.TP 9
+.B AUTH
+Messages ayant trait à la sécurité ou aux autorisations.
+.TP
+.B AUTHPRIV
+Version privée de AUTH.
+.TP
+.B CRON
+Messages ayant trait aux démons d'horloge (
+.BR cron(8)
+et
+.BR at(1)
+).
+.TP
+.B DAEMON
+Message ayant trait aux démons du système sans facilité spécifique.
+.TP
+.B FTP
+Message ayant trait au démon FTP.
+.TP
+.B KERN
+Messages du noyeau Linux.
+.TP
+.B LOCAL0
+Messages à usage locaux.
+.TP
+.B 
+à
+.TP
+.B LOCAL7
+.TP
+.B LPR
+Messages ayant trait au système d'impression.
+.TP
+.B MAIL
+Messages ayant trait au système de mèls.
+.TP
+.B NEWS
+Messages aynt trait au système de news.
+.TP
+.B SYSLOG
+Messages générés de façon interne par 
+.BR syslog(3).
+.TP
+.B USER
+Messages générques au niveau utilisateurs.
+.TP
+.B UUCP
+Messages ayant trait au système UUCP.
+.PP
+La valeur par défaut de l'option
+.B FACILITY
+est
+.B USER.
+.PP
+L'option 
+.B IDENT
+permet de définir un identifiant qui sera préfixé devant chaques messages.
+Cette option prend, en argument, une chaîne de caractères sans blancs.
+.PP
+La valeur par défaut de l'option est "
+.B inotify-daemon
+".
+.PP
+L'option
+.B OPTIONS
+premet de fixer les options de
+.BR syslog(3).
+Cette option prend, en argument, soit la valeur 
+.B none
+pour indiquer qu'il n'y a pas d'options, soit une combinaison des
+options suivantes :
+.TP 7
+.B CONS
+Les messages sont directement écris sur la console du système s'il
+y a une erreur lors de la transmission du message au système de gestion
+des journaux.
+.TP
+.B NDELAY
+Ouvrir la connexion au système de journalisation immédiatement lors de
+l'initialisation.
+.TP
+.B NOWAIT
+Ne pas attendre le processus fils s'il est créé lors de l'envoi d'un message.
+.TP
+.B ODELAY
+L'inverse de
+.B NDELAY.
+La connexion au système de journalisation est effectuée que lors de l'émission
+du premier message.
+.TP
+.B PERROR
+Les messages sont aussi écris sur la sortie d'erreur (
+.B STDERR
+).
+.TP
+.B PID
+L'identifiant processus (PID) de l'émetteur est inclus dans chaque message.
+.PP

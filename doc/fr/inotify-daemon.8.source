@@ -1,0 +1,162 @@
+.\"
+.\" Author: Christian CAMIER <christian.c@promethee.services>
+.\" Copyright (c) 2020 Christian CAMIER <christian.c@promethee.services>, Paris, France
+.\"                    All rights reserved
+.\"
+.\" As far as I am concerned, the code I have written for this software
+.\" can be used freely for any purpose.  Any derived versions of this
+.\" software must be clearly marked as such, and if the derived work is
+.\" incompatible with the protocol description in the RFC file, it must be
+.\" called by a name other than "ssh" or "Secure Shell".
+.\"
+.\" Copyright (c) 2020 Christian CAMIER.  All rights reserved.
+.\" Copyright (c) 2020 Promethée Services Campbell.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+.\" OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+.\" IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+.\" INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+.\" NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+.\" DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+.\" THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+.\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\"
+.TH INOTIFY-DAEMON 5 Jully 06 2020 "Linux Administrator's Manual"
+.SH NAME
+.B inotify-daemon
+\- gestion des événements fichiers
+.SH DESCRIPTION
+.SS Présentation
+Inotify-daemon est un démon qui permet, sur des répertoires
+donnés, d'initier des actions lorsque certains événements
+du système de fichiers surviennent.
+.SH OPTIONS
+.SS Préséance des options
+Lorsque
+.B inotify-daemon
+est invoqué, les arguments en ligne de commande
+ont priorité sur les directives correspondantes donnés dans le
+fichier de configuration.
+.SS Styles d'options
+.B Inotify-daemon
+permet d'utiliser indiférament des options courtes et longues.
+.SS Les options courtes
+Les options courtes, composées d'un unique caractère, précédé d'un
+unique signe moins (
+.B -
+).
+.PP
+Certaines de ces options nécessitent un argument. Dans ce cas,
+ce dernier est placé sur l'argument suivant l'option de la ligne
+de commande.
+.PP
+Exemple :
+.PP
+.EE
+inotify-daemon -C /home/foo/myconfiguration.cfg
+.EX
+Plusieurs options courtes peuvent être cumilées sur le même argument
+de la commande en ligne. Ainsi, les deux formes suivantes sont
+équivalentes :
+.PP
+.EE
+inotify-daemon -f -T
+.EX
+.EE
+inotify-daemon -fT
+.EX
+.PP
+Dans le cas où plusieurs options sont accolées, et, que certaines
+d'entre elles nécessitent un argument, les arguments suivants de
+la ligne de commande, dena l'ordre d'apparition des options, seront
+utiisés. Les deux formes suivantes sont donc équivalentes :
+.PP
+.EE
+inotify-daemon -C /tmp/foo.cfg -f -L syslog -l info
+.EX
+.EE
+inotify-daemon -CfLl /tmp/foo.cfg syslog info
+.EX
+.SS Les options longues
+Les options longues sont composés de plusieurs carcatères, les rendant
+ainsi plus parlantes, et précédées
+de deux signes moins (
+.B --
+).
+.PP
+Contrairement aux options courtes, les options longues ne peuvent être
+cummulées sur le même argument de la ligne de commande.
+.PP
+Si une option longue nécessite un argument, l'argument est accolé à la
+suite de l'option, dans le même argument de la ligne de commande, séparé
+par un signe égal (
+.B =
+). Exemple :
+.PP
+.EE
+inotify-daemon --configuration=/home/foo/myconfiguration.cfg
+.EX
+.PP
+.SS Les options d'inotify-daemon
+Les options prises en compte par
+.B inotify-daemon
+sont les suivantes :
+.TP
+\fB\-C\fR file, \fB\-\-configuration\fR=file
+Défini le fichier de configuration devant pris en compte au démarrage.
+L'argument
+.I file
+est le chemin d'accès au fichier de configuration désiré.
+La valeur par défaut est
+.B ${sysconfdir}/inotify-daemon.conf
+.TP
+\fB\-f\fR, \fB\-\-foreground\fR=file
+Exécution en avant plan. Utile pour le débogage.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Affiche une aide succinte des options d'\fBinotify-daemon\fR.
+.TP
+\fB\-L\fR driver, \f\-\-Blogdriver\fR=driver
+Défini le pilote devant être utilisé pour la consignation des
+trace d'exécution. Pour plus d'informations voir
+.BR inotify-daemon.conf (5)
+.TP
+\fB\-l\fR level, \f\-\-Bloglevel\fR=level
+Défini le niveau à partir duquel les traces applicatives sont
+consignées. Pour plus d'information voir
+.BR inotify-daemon.conf (5)
+.TP
+\fB\-o\fR opt=val, \f\-\-Blogoption\fR=opt=val
+Défini une option du système de journalisation. Pour plus d'
+information voir
+.BR inotify-daemon.conf (5)
+.TP
+\fB\-p\fR file, \fB\-\-pidfile\fR=file
+Défini le fichier à utiliser pour stocker l'identifiant (PID)
+du processus de démon en cours d'exécution.
+.TP
+\fB\-R\fR, \fB\-\-reload\fR
+Demande au démon en cours d'exécution de relire son fichier de
+configuration.
+\fB\-S\fR, \fB\-\-stop\fR
+Demande au démon en cours d'exécution de s'arrêter
+.TP
+\fB\-T\fR, \fB\-\-test\fR
+Test du fichier de configuration.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Affiche la version d'\fBinotify-daemon\fR.
+.SH VOIR AUSSI
+.BR inotify-daemon.conf (5),
+.BR inotify (7)

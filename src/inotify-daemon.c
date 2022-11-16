@@ -144,7 +144,7 @@ static void logging_init(void)
 	(void)cc_log_set_drv_opt("syslog",  "ident",    DEFAULT_IDENT);
 
 	(void)cc_log_set_drv_opt("file",    "filename",    DEFAULT_LOG_FILE);
-	(void)cc_log_set_drv_opt("file",    "timestamped", "yes");
+	(void)cc_log_set_drv_opt("file",    "timestamped", "no");
 	(void)cc_log_set_drv_opt("file",    "stayopen",    "no");
 
 	(void)cc_log_set_driver("default");

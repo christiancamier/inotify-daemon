@@ -32,7 +32,7 @@
 #endif
 
 #if !defined(DEFAULT_LOG_FILE)
-#define DEFAULT_LOG_FILE  "/var/log/inotify-daemon-%Y%m"
+#define DEFAULT_LOG_FILE  "/var/log/inotify-daemon.log"
 #endif
 
 #if !defined(SYSCONFDIR)

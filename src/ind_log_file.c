@@ -42,10 +42,10 @@ static void do_close  (void);
 #define FOPT_TIMESTAMPED	0x01	/* Filename is timestamped */
 #define FOPT_STAYOPEN		0x02	/* File stay opened */
 
-static char  filename[MAXPATHLEN + 1] = "/var/log/cc_log.log";
-static char  filelast[MAXPATHLEN + 1] = "/var/log/cc_log.log";
+static char  filename[MAXPATHLEN + 1] = "/var/log/inotify-daemon-%Y%m.log";
+static char  filelast[MAXPATHLEN + 1] = "/var/log/inotify-daemon-000000.log";
 static FILE *filedesc                 = NULL;
-static int   fileopts                 = 0;
+static int   fileopts                 = FOPT_TIMESTAMPED | FOPT_STAYOPEN;
 static int   filemode                 = 0600;
 
 static int file_sopt (const char *option, const char *value, int simu)

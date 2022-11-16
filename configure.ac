@@ -21,9 +21,30 @@ AC_INIT([inotify-daemon], [0.1], [christian.c@promethee.services])
 AC_CONFIG_SRCDIR([src/inotify-daemon.c])
 AC_CONFIG_HEADERS([src/ind_config.h])
 
+# AC_ARG_WITH([package], AS_HELP_STRING([--with-package], [Do not install, create package]))
+
 AC_MSG_CHECKING([Operating system name])
 OS_NAME=`uname -s`
 test "$OS_NAME" == 'Linux' || AC_MSG_ERROR "Operatings system '$OS_NAME' is not supported"
+
+# package_type=nothing
+# if test "x$with_package" = "xyes"
+# then
+#   case "$OS_NAME" in
+#   Linux)
+#     AC_MSG_NOTICE("0 Package not currently implemented")
+#     with_package=no
+#     ;;
+#   *BSD)
+#     AC_MSG_NOTICE("1 Package not currently implemented")
+#     with_package=no
+#     ;;
+#   *)
+#     AC_MSG_NOTICE("2 Package not currently implemented")
+#     with_package=no
+#     ;;
+#   esac
+# fi
 
 # Checks for programs.
 AC_PROG_CXX
@@ -47,6 +68,30 @@ test "$HAVE_TEXI2ANY" == "non" && AC_MSG_NOTICE("Info documentation will not be 
 AC_CHECK_PROG(HAVE_TEXI2PDF, [texi2pdf], [yes], [no])
 AC_SUBST(have_texi2pdf, $HAVE_TEXI2PDF)
 test "$HAVE_TEXI2ANY" == "non" && AC_MSG_NOTICE("PDF documentation will not be built")
+
+# Package creation
+# if test "x$with_package" = "xyes" -a "$OS_NAME" = 'Linux'
+# then
+#   ccr_os_pkg_type=''
+#   if test -z "$ccr_os_pkg_type" -a -f /etc/os-release
+#   then
+#     eval `sed -e 's/^/ccr_os_/g' -e 's/$/;/g' /etc/os-release`
+#     if test -n "$ccr_os_ID"
+#     then
+#        case "$ccr_os_ID" in
+#        debian|ubuntu)
+#        ccr_os_pkg_type=deb
+#          ;;
+#        esac
+#     fi
+#   fi
+#   if test -z "$ccr_os_pkg_type" -a -f /etc/redhat-release
+#   then :
+#   fi
+#   if test -z "$ccr_os_pkg_type"
+#   then
+#     AC_MSG_NOTICE("Connot define package type")
+# fi
 
 # Gets the libCCR needed for compilation
 if   test -d libCCR

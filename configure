@@ -2267,10 +2267,31 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 ac_config_headers="$ac_config_headers src/ind_config.h"
 
 
+# AC_ARG_WITH([package], AS_HELP_STRING([--with-package], [Do not install, create package]))
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking Operating system name" >&5
 $as_echo_n "checking Operating system name... " >&6; }
 OS_NAME=`uname -s`
 test "$OS_NAME" == 'Linux' || as_fn_error $? "" "$LINENO" 5 "Operatings system '$OS_NAME' is not supported"
+
+# package_type=nothing
+# if test "x$with_package" = "xyes"
+# then
+#   case "$OS_NAME" in
+#   Linux)
+#     AC_MSG_NOTICE("0 Package not currently implemented")
+#     with_package=no
+#     ;;
+#   *BSD)
+#     AC_MSG_NOTICE("1 Package not currently implemented")
+#     with_package=no
+#     ;;
+#   *)
+#     AC_MSG_NOTICE("2 Package not currently implemented")
+#     with_package=no
+#     ;;
+#   esac
+# fi
 
 # Checks for programs.
 ac_ext=cpp
@@ -3678,6 +3699,30 @@ have_texi2pdf=$HAVE_TEXI2PDF
 
 test "$HAVE_TEXI2ANY" == "non" && { $as_echo "$as_me:${as_lineno-$LINENO}: \"PDF documentation will not be built\"" >&5
 $as_echo "$as_me: \"PDF documentation will not be built\"" >&6;}
+
+# Package creation
+# if test "x$with_package" = "xyes" -a "$OS_NAME" = 'Linux'
+# then
+#   ccr_os_pkg_type=''
+#   if test -z "$ccr_os_pkg_type" -a -f /etc/os-release
+#   then
+#     eval `sed -e 's/^/ccr_os_/g' -e 's/$/;/g' /etc/os-release`
+#     if test -n "$ccr_os_ID"
+#     then
+#        case "$ccr_os_ID" in
+#        debian|ubuntu)
+#        ccr_os_pkg_type=deb
+#          ;;
+#        esac
+#     fi
+#   fi
+#   if test -z "$ccr_os_pkg_type" -a -f /etc/redhat-release
+#   then :
+#   fi
+#   if test -z "$ccr_os_pkg_type"
+#   then
+#     AC_MSG_NOTICE("Connot define package type")
+# fi
 
 # Gets the libCCR needed for compilation
 if   test -d libCCR
