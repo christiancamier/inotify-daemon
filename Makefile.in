@@ -20,7 +20,7 @@ SUBDIRS = libCCR	\
 	  src		\
 	  doc
 
-all install: Force
+all install: disttree
 	$(SUBMAKE) _$@
 	for sdir in $(SUBDIRS);	\
 	do			\
@@ -40,18 +40,34 @@ clean distclean: Force
 	done
 	$(SUBMAKE) _$@
 
+disttree: Force
+	@ : ;												\
+	P=$(prefix);											\
+	for D in	$${P}/{bin,etc,usr}								\
+			$${P}/etc/inotify-daemon 							\
+			$${P}/usr/share/{man,doc}							\
+			$${P}/usr/share/doc/inotify-daemon						\
+			$${P}/usr/share/man/man{5,8}							\
+			$$(cd doc; for x in ??; do echo $${P}/usr/share/man/$${x}/man{5,8}; done)	\
+	;												\
+	do												\
+		mkdir -v -p -m 755 ${TOPDIR}/dist/$${D};						\
+	done
+
 _all: Force
 	:
 
 _clean: Force
 	rm -fr $(ALL) $(COBJS) autom4te.cache
 	rm -fr *~ \#* *.i
+	rm -fr t[aeiou]t[aeiou] foo bar quux foobar
 
 _distclean: _clean
 	rm -fr Makefile Makefile.inc
 	rm -fr config.log config.status
 	rm -fr autom4te.cache
 	rm -fr libCCR
+	rm -fr dist
 
 _install:
 	$(INSTALL_DOC) changelog

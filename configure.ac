@@ -127,6 +127,7 @@ AC_CONFIG_FILES([Makefile
 		 Makefile.inc
                  src/Makefile
 		 doc/Makefile
+		 doc/Makefile.inc
                  doc/en/Makefile
 		 doc/fr/Makefile])
 

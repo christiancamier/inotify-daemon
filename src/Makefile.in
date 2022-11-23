@@ -43,7 +43,14 @@ CNF     = inotify-daemon.conf
 ALL     = $(EXECS) $(SYSD) $(CNF)
 
 all: $(ALL)
-
+	@ : BEGIN ;											\
+	P=$(TOPDIR)/dist/$(prefix);									\
+	rm -f				$${P}/bin/inotify-daemon;					\
+	cp -v inotify-daemon		$${P}/bin/inotify-daemon;					\
+	chmod 750			$${P}/bin/inotify-daemon;					\
+	cp -v inotify-daemon.conf	$${P}/etc/inotify-daemon.conf;					\
+	chmod 640			$${P}/etc/inotify-daemon.conf;					\
+	: END
 install: all install.sbin
 
 clean: Force

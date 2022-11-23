@@ -4614,7 +4614,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files Makefile Makefile.inc src/Makefile doc/Makefile doc/en/Makefile doc/fr/Makefile"
+ac_config_files="$ac_config_files Makefile Makefile.inc src/Makefile doc/Makefile doc/Makefile.inc doc/en/Makefile doc/fr/Makefile"
 
 
 
@@ -5316,6 +5316,7 @@ do
     "Makefile.inc") CONFIG_FILES="$CONFIG_FILES Makefile.inc" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
+    "doc/Makefile.inc") CONFIG_FILES="$CONFIG_FILES doc/Makefile.inc" ;;
     "doc/en/Makefile") CONFIG_FILES="$CONFIG_FILES doc/en/Makefile" ;;
     "doc/fr/Makefile") CONFIG_FILES="$CONFIG_FILES doc/fr/Makefile" ;;
 

@@ -27,6 +27,16 @@ all install: Force
 	    $(SUBMAKE) $@;	\
 	  )			\
 	done
+	@ : BEGIN;											\
+	P=$$(echo "$(TOPDIR)/dist/$(prefix)/usr/share/man" | sed -e s@//@/@g);				\
+	if [ -d en ];											\
+	then												\
+		rm -f                                        $${P}/man5/inotify-daemon.conf.5.gz;	\
+		rm -f                                        $${P}/man8/inotify-daemon.8.gz;		\
+		ln -v $${P}/en/man5/inotify-daemon.conf.5.gz $${P}/man5/inotify-daemon.conf.5.gz;	\
+		ln -v $${P}/en/man8/inotify-daemon.8.gz      $${P}/man8/inotify-daemon.8.gz;		\
+	fi;												\
+	: END
 
 clean distclean: Force
 	for sdir in $(SUBDIRS);	\
@@ -39,13 +49,12 @@ clean distclean: Force
 	$(SUBMAKE) _$@
 
 _distclean: _clean
-	rm -fr Makefile
+	rm -fr Makefile.inc Makefile
 
 _clean: Force
 	:
 
 _all: Force
-	:
 
 _install:
 	:

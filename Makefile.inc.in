@@ -53,6 +53,7 @@ pdfdir        ?= @pdfdir@
 psdir         ?= @psdir@
 #!END
 
+SHELL    = /bin/bash
 MAKE    ?= make
 SUBMAKE  = $(MAKE) -f Makefile
 
