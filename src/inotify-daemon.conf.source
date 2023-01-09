@@ -1,59 +1,37 @@
 # INOTIFY-DAEMON configuration file
 
 #
-# Settings section
+# SETTINGS SECTION
 #
-# Keywords :
-# 
-settings
-  #
-  # Logging options
-  #
-  # Syslog
-  # logging syslog
-  #   set facility user
-  #   set options ndelay|pid
-  # end
-  # File
-  logging file
-     set filename /var/log/inotify_daemon.log
-     set mode 0600
-     set stayopen off
-  end
+SETTINGS
+#
+# LOGGING MANAGEMENT
+#
+	# SYSLOG
+	# If you want to send logs to the syslog
+	# uncomment this part.
+	# LOGGING SYSLOG
+	#	SET FACILITY USER
+	#	SET OPTION NDELAY|PID
+	# END
 
-  pidfile /var/run/inotify_daemon.pid
-end
+	# FILE
+  	LOGGING FILE
+		SET FILENAME /var/log/inotify_daemon.log
+		SET MODE 0600
+		SET STAYOPEN OFF
+  	END
 
 #
-# %D    : Directory name
-# %E    : Event Name
-# %e[m] : Event Mask (32 bits integer)
-# %c[m] : cookie     (32 bits integer)
-# %F    : Filename
+# PIDFILE
 #
-# 32 mits integers modifiers (m) :
-# none : decimal
-#    b : binary, 0 filled 32 bits alligned (32 characters)
-#    d : decimal
-#    o : octal, 0 filled 32 bits alligned (11 characters)
-#    x : lower case hexadecimal, 0 filled, 32 bits alligned (8 characters)
-#    X : upper case hexadecimal, 0 filled, 32 bits alligned (8 characters)
-#
+	PIDFILE /var/run/inotify_daemon.pid
+END
 
-directory /tmp
-  user  uucp
-  group users
-  event access		     ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F turlututu chapeau pointu
-  event attrib               ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F turlututu chapeau pointu
-  event close_write          ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F
-  event close_nowrite        ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F
-  event create               ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F
-  event delete|delete_self   ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F
-  event modify               ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F
-  #event rename	             ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %cb %cd %co %cx %cX %F %O
-  event rename	             ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %cb %cd %co %cx %cX "'%O' renamed '%F'"
-  event move_self            ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F
-  event open                 ./handler_sample.sh %D %E %e %eb %ed %eo %ex %eX %c %F
-end
+#
+# Include all files with the '.conf' extension
+# in ${prefix}/etc/inttify-daemon.d directory
 
 include ${prefix}/etc/inotify-daemon.d/*.conf
+
+

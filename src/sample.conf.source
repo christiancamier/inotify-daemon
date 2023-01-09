@@ -1,0 +1,20 @@
+#
+# Directory monitoring sample
+#
+
+#
+# Uncomment this DIRECTORY section to follow some
+# events on the /tmp directory.
+#
+
+#DIRECTORY /tmp
+#	USER	www-data
+#	GROUP	www-data
+#	SHELL	/bin/sh
+#
+#	EVENT RENAME		echo "%D: %O has been renamed to %F"
+#	EVENT CLOSE_WRITE	echo "%D: %F has been closed after changes"
+#	EVENT CREATE		echo "%D: New file %F"
+#	EVENT DELETE		echo "%D: File %F has been deleted"
+#	EVENT MODUFY		echo "%D: File %F has changed"
+#END

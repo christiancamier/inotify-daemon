@@ -273,8 +273,60 @@ Shell interpreter that will be used to execute actions.
 .B EVENT
 Defines an action for one or more events.
 .SS The USER directive
-
-
-
-
+This directive determines the system user identity (UID) that will
+be used to execute actions.
+.PP
+This directive take as a single argument a positive integer or a system username.
+It is used as follow:
+.EX
+  USER username
+.EE
+.PP
+.EX
+  USER positive-integer
+.EE
+.PP
+The default value is
+.B nobody
+(UID = 65534).
+.SS The GROUP directive
+This directive determines the system group identity (GID) that will
+be used to execute actions.
+.PP
+This directive take as a single argument a positive integer or a system group name.
+It is used as follow:
+.EX
+  GROUP groupname
+.EE
+.PP
+.EX
+  GROUP positive-integer
+.EE
+.PP
+The default value is
+.B nogroup
+(GID = 65534).
+.SS The SHELL directiv
+This directive define with command language (shell) must be used to interpret the commands.
+It is used as follow:
+.EX
+  SHELL path-to-the-interpreter
+.EE
+.PP
+The default value is 
+.B /bin/sh
+.SS The EVENT directive
+This directive define, for one or more events, on the monitored directory, the action to
+execute.
+.PP
+This directive takes two arguments:
+.TP 7
+.B  Events
+Event or combinaison of events expected
+.TP
+.B Action
+Action tha would be executed when an expected event (defined in the first argument) is received.
+Note that this argument starts with the first non-white character after the first argument and
+ends at the end of the line, thus incorporating all blanks included.
+.PP
 

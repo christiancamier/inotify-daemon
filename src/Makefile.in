@@ -39,7 +39,8 @@ CHDRS	= $(shell echo *.h)
 COBJS	= $(CSRCS:.c=.o)
 EXECS   = inotify-daemon
 SYSD    = inotify-daemon.service
-CNF     = inotify-daemon.conf
+CNF     = inotify-daemon.conf \
+	  sample.conf
 ALL     = $(EXECS) $(SYSD) $(CNF)
 
 all: $(ALL)
@@ -48,9 +49,14 @@ all: $(ALL)
 	rm -f				$${P}/bin/inotify-daemon;					\
 	cp -v inotify-daemon		$${P}/bin/inotify-daemon;					\
 	chmod 750			$${P}/bin/inotify-daemon;					\
+	rm -f				$${P}/etc/inotify-daemon.conf;					\
 	cp -v inotify-daemon.conf	$${P}/etc/inotify-daemon.conf;					\
 	chmod 640			$${P}/etc/inotify-daemon.conf;					\
+	rm -f				$${P}/etc/inotify-daemon.d/sample.conf;				\
+	cp -v sample.conf		$${P}/etc/inotify-daemon.d/sample.conf;				\
+	chmod 640			$${P}/etc/inotify-daemon.d/sample.conf;				\
 	: END
+
 install: all install.sbin
 
 clean: Force
@@ -87,6 +93,9 @@ inotify-daemon.conf: inotify-daemon.conf.source Makefile
 	python3 $(TOPDIR)/util/source2any.py -M ../Makefile.inc $<
 
 inotify-daemon.service: inotify-daemon.service.source Makefile
+	python3 $(TOPDIR)/util/source2any.py -M ../Makefile.inc $<
+
+sample.conf: sample.conf.source Makefile
 	python3 $(TOPDIR)/util/source2any.py -M ../Makefile.inc $<
 
 Force:
