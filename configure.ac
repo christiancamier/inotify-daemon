@@ -63,7 +63,7 @@ debian|ubuntu)
   AC_CHECK_PROG(HAVE_DPKG_DEB, [dpkg-deb], [true], [false])
   $HAVE_DPKG_DEB && ccr_os_pkg_type=deb
   ;;
-fedora|rhel)
+centos|fedora|rhel)
   AC_CHECK_PROG(HAVE_RPMBUILD, [rpmbuild], [true], [false])
   $HAVE_RPMBUILD && ccr_os_pkg_type=rpm
   ;;
