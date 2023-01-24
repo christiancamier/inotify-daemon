@@ -51,6 +51,9 @@ htmldir       ?= @htmldir@
 dvidir        ?= @dvidir@
 pdfdir        ?= @pdfdir@
 psdir         ?= @psdir@
+have_texi2any ?= @have_texi2any@
+have_texi2pdf ?= @have_texi2pdf@
+
 #!END
 
 SHELL    = /bin/bash

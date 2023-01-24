@@ -1,2 +1,39 @@
 #!/bin/bash
 
+set_file_attributes() {
+    owner="$1"
+    group="$2"
+    fmode="$3"
+    fname="$4"
+    [ -f $fname ] || return 0
+    chown $owner ${prefix}/$fname
+    chgrp $group ${prefix}/$fname
+    chmod $fmode ${prefix}/$fname
+}
+
+set_file_attributes root root 644 etc/inotify-daemon.conf
+set_file_attributes root root 755 etc/inotify-daemon.d
+set_file_attributes root root 644 etc/inotify-daemon.d/sample.conf-dist
+set_file_attributes root root 511 usr/sbin/inotify-daemon
+set_file_attributes root root 755 usr/share/doc/inotify-daemon
+set_file_attributes root root 644 usr/share/doc/inotify-daemon/inotify-daemon-en.info
+set_file_attributes root root 644 usr/share/doc/inotify-daemon/inotify-daemon-en.pdf
+set_file_attributes root root 644 usr/share/doc/inotify-daemon/inotify-daemon-fr.info
+set_file_attributes root root 644 usr/share/doc/inotify-daemon/inotify-daemon-fr.pdf
+set_file_attributes root root 644 usr/share/man/en/man5/inotify-daemon.conf.5.gz
+set_file_attributes root root 644 usr/share/man/en/man8/inotify-daemon.8.gz
+set_file_attributes root root 644 usr/share/man/fr/man5/inotify-daemon.conf.5.gz
+set_file_attributes root root 644 usr/share/man/fr/man8/inotify-daemon.8.gz
+set_file_attributes root root 644 usr/share/man/man5/inotify-daemon.conf.5.gz
+set_file_attributes root root 644 usr/share/man/man8/inotify-daemon.8.gz
+
+if [ ! -f ${prefix}/etc/inotify-deamon.conf ]
+then
+    cp ${prefix}/usr/share/doc/inotify-daemon/inotify-daemon.conf-template ${prefix}/etc/inotify-deamon.conf
+    chmod 644 ${prefix}/etc/inotify-deamon.conf
+fi
+
+systemctl enable inotify-deamon
+systemctl start  inotify-deamon
+
+exit 0

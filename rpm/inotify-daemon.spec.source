@@ -1,0 +1,72 @@
+%define _topdir   ${TOPDIR}/rpm
+%define distdir   ${TOPDIR}/dist
+%define buildroot ./builddir
+%define have_texi2any ${have_texi2any}
+%define have_texi2pdf ${have_texi2pdf}
+
+Name:	        inotify-daemon
+Version:        ${version_major}.${version_minor}.${version_revision}
+Release:	1%{?dist}
+Summary:	Inotify-daemon file events driven scheduler.
+BuildArch:	x86_64
+
+Group:		System Environment/Daemons
+License:	BSD
+URL:		https://promethee-services.fr
+Source0:	%{_topdir}/dist
+Prefix:		${clean_prefix}
+
+# Requires:  
+
+%description
+
+Inotify-daemon is a daemon that allows, on given directories, to
+initiate actions when some file system events occur. Inotify-daemon is
+a service that allows, on given directories, to initiate an action
+when certain events of the file system occur.
+
+%install
+
+(cd %{distdir}; tar cf - .) | (cd %{buildroot}; tar xpf -)
+
+%files
+
+%attr(755,root,root)${prefix}/etc/inotify-daemon.d
+%attr(644,root,root)${prefix}/etc/inotify-daemon.d/sample.conf
+%attr(640,root,root)${prefix}/usr/lib/systemd/system/inotify-daemon.service
+%attr(755,root,root)${prefix}/usr/sbin/inotify-daemon
+%attr(755,root,root)${prefix}/usr/share/doc/inotify-daemon
+%attr(644,root,root)${prefix}/usr/share/doc/inotify-daemon/inotify-daemon.conf-template
+%if "%{have_texi2any}" == "yes"
+%attr(644,root,root)${prefix}/usr/share/doc/inotify-daemon/inotify-daemon-en.info
+%attr(644,root,root)${prefix}/usr/share/doc/inotify-daemon/inotify-daemon-fr.info
+%endif
+%if "%{have_texi2pdf}" == "yes"
+%attr(644,root,root)${prefix}/usr/share/doc/inotify-daemon/inotify-daemon-en.pdf
+%attr(644,root,root)${prefix}/usr/share/doc/inotify-daemon/inotify-daemon-fr.pdf
+%endif
+%attr(644,root,root)${prefix}/usr/share/man/en/man5/inotify-daemon.conf.5.gz
+%attr(644,root,root)${prefix}/usr/share/man/en/man8/inotify-daemon.8.gz
+%attr(644,root,root)${prefix}/usr/share/man/fr/man5/inotify-daemon.conf.5.gz
+%attr(644,root,root)${prefix}/usr/share/man/fr/man8/inotify-daemon.8.gz
+%attr(644,root,root)${prefix}/usr/share/man/man5/inotify-daemon.conf.5.gz
+%attr(644,root,root)${prefix}/usr/share/man/man8/inotify-daemon.8.gz
+
+%pre
+
+if systemctl is-active inotify-daemon
+then
+  systemctl stop    inotify-daemon
+  systemctl disable inotify-daemon
+fi
+
+%post
+
+if [ ! -f ${prefix}/etc/inotify-daemon.conf ]
+then
+    cp ${prefix}/usr/share/doc/inotify-daemon/inotify-daemon.conf-template ${prefix}/etc/inotify-daemon.conf
+    chmod 644 ${prefix}/etc/inotify-daemon.conf
+fi
+
+systemctl enable inotify-daemon
+systemctl start  inotify-daemon

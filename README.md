@@ -10,6 +10,14 @@ when certain events of the file system occur.
 Inotify-daemon runs only on Linux system having the inotify functions.
 
 ## Dependances
+### Runtime dependances
 Inotify-daemon has no spe!cific dependances.
-However, if yout want to build te "info" and the "pdf" documentation
-you need to install the packages "texinfo" and "texlive-full".
+
+### Compilation dependances
+To compile inotify-daemon, the following packages are required:
+- bash
+- git
+- python3
+
+However, if you want to build the documentation in "info" and "pdf" formats,
+you need to install the "texinfo" and "texlive-full" packages.

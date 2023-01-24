@@ -27,25 +27,6 @@ AC_MSG_CHECKING([Operating system name])
 OS_NAME=`uname -s`
 test "$OS_NAME" == 'Linux' || AC_MSG_ERROR "Operatings system '$OS_NAME' is not supported"
 
-# package_type=nothing
-# if test "x$with_package" = "xyes"
-# then
-#   case "$OS_NAME" in
-#   Linux)
-#     AC_MSG_NOTICE("0 Package not currently implemented")
-#     with_package=no
-#     ;;
-#   *BSD)
-#     AC_MSG_NOTICE("1 Package not currently implemented")
-#     with_package=no
-#     ;;
-#   *)
-#     AC_MSG_NOTICE("2 Package not currently implemented")
-#     with_package=no
-#     ;;
-#   esac
-# fi
-
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
@@ -69,29 +50,26 @@ AC_CHECK_PROG(HAVE_TEXI2PDF, [texi2pdf], [yes], [no])
 AC_SUBST(have_texi2pdf, $HAVE_TEXI2PDF)
 test "$HAVE_TEXI2ANY" == "non" && AC_MSG_NOTICE("PDF documentation will not be built")
 
-# Package creation
-# if test "x$with_package" = "xyes" -a "$OS_NAME" = 'Linux'
-# then
-#   ccr_os_pkg_type=''
-#   if test -z "$ccr_os_pkg_type" -a -f /etc/os-release
-#   then
-#     eval `sed -e 's/^/ccr_os_/g' -e 's/$/;/g' /etc/os-release`
-#     if test -n "$ccr_os_ID"
-#     then
-#        case "$ccr_os_ID" in
-#        debian|ubuntu)
-#        ccr_os_pkg_type=deb
-#          ;;
-#        esac
-#     fi
-#   fi
-#   if test -z "$ccr_os_pkg_type" -a -f /etc/redhat-release
-#   then :
-#   fi
-#   if test -z "$ccr_os_pkg_type"
-#   then
-#     AC_MSG_NOTICE("Connot define package type")
-# fi
+ccr_os_pkg_type=''
+ccr_os_id=''
+if   test -f /etc/os-release
+then eval `sed -e 's/^/ccr_os_/g' -e 's/$/;/g' /etc/os-release`
+elif test -f /usr/lib/os-release
+then eval `sed -e 's/^/ccr_os_/g' -e 's/$/;/g' /usr/lib/os-release`
+fi
+
+case "${ccr_os_ID}" in
+debian|ubuntu)
+  AC_CHECK_PROG(HAVE_DPKG_DEB, [dpkg-deb], [true], [false])
+  $HAVE_DPKG_DEB && ccr_os_pkg_type=deb
+  ;;
+fedora|rhel)
+  AC_CHECK_PROG(HAVE_RPMBUILD, [rpmbuild], [true], [false])
+  $HAVE_RPMBUILD && ccr_os_pkg_type=rpm
+  ;;
+esac
+
+AC_SUBST(pkgdir, $ccr_os_pkg_type)
 
 # Gets the libCCR needed for compilation
 if   test -d libCCR
@@ -129,7 +107,9 @@ AC_CONFIG_FILES([Makefile
 		 doc/Makefile
 		 doc/Makefile.inc
                  doc/en/Makefile
-		 doc/fr/Makefile])
+		 doc/fr/Makefile
+		 deb/Makefile
+		 rpm/Makefile])
 
 AC_CONFIG_SUBDIRS([libCCR])
 AC_OUTPUT

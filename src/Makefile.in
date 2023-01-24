@@ -44,29 +44,31 @@ CNF     = inotify-daemon.conf \
 ALL     = $(EXECS) $(SYSD) $(CNF)
 
 all: $(ALL)
-	@ : BEGIN ;											\
-	P=$(TOPDIR)/dist/$(prefix);									\
-	rm -f				$${P}/bin/inotify-daemon;					\
-	cp -v inotify-daemon		$${P}/bin/inotify-daemon;					\
-	chmod 750			$${P}/bin/inotify-daemon;					\
-	rm -f				$${P}/etc/inotify-daemon.conf;					\
-	cp -v inotify-daemon.conf	$${P}/etc/inotify-daemon.conf;					\
-	chmod 640			$${P}/etc/inotify-daemon.conf;					\
-	rm -f				$${P}/etc/inotify-daemon.d/sample.conf;				\
-	cp -v sample.conf		$${P}/etc/inotify-daemon.d/sample.conf;				\
-	chmod 640			$${P}/etc/inotify-daemon.d/sample.conf;				\
+	@ : BEGIN ;												\
+	P=$(TOPDIR)/dist/$(prefix);										\
+	rm -f				$${P}/usr/sbin/inotify-daemon;						\
+	cp -v inotify-daemon		$${P}/usr/sbin/inotify-daemon;						\
+	chmod 750			$${P}/usr/sbin/inotify-daemon;						\
+	rm -f                           $${P}/usr/share/doc/inotify-daemon/inotify-daemon.conf-template;	\
+	cp -v inotify-daemon.conf	$${P}/usr/share/doc/inotify-daemon/inotify-daemon.conf-template;	\
+	chmod 640			$${P}/usr/share/doc/inotify-daemon/inotify-daemon.conf-template;	\
+	rm -f				$${P}/etc/inotify-daemon.d/sample.conf;					\
+	cp -v sample.conf		$${P}/etc/inotify-daemon.d/sample.conf;					\
+	chmod 640			$${P}/etc/inotify-daemon.d/sample.conf;					\
+	rm -f                           $${P}/usr/lib/systemd/system/inotify-daemon.service;			\
+	cp -v inotify-daemon.service	$${P}/usr/lib/systemd/system/inotify-daemon.service;			\
+	chmod 640			$${P}/usr/lib/systemd/system/inotify-daemon.service;			\
 	: END
 
 install: all install.sbin
 
 clean: Force
 	rm -fr $(ALL) $(COBJS) autom4te.cache
-	rm -fr *~ \#* *.i
+	rm -f  *~ \#* *.i
 
 distclean: clean
-	rm -fr Makefile
-	rm -fr config.h config.log config.status
-	rm -fr autom4te.cache
+	rm -f  Makefile
+	rm -f  config.h config.log config.status
 
 install.sbin: $(SBINS)
 	mkdir -m 755 -p $(sbindir)

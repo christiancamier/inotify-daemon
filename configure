@@ -630,6 +630,9 @@ EGREP
 GREP
 CPP
 topdir
+pkgdir
+HAVE_RPMBUILD
+HAVE_DPKG_DEB
 have_texi2pdf
 HAVE_TEXI2PDF
 have_texi2any
@@ -2274,25 +2277,6 @@ $as_echo_n "checking Operating system name... " >&6; }
 OS_NAME=`uname -s`
 test "$OS_NAME" == 'Linux' || as_fn_error $? "" "$LINENO" 5 "Operatings system '$OS_NAME' is not supported"
 
-# package_type=nothing
-# if test "x$with_package" = "xyes"
-# then
-#   case "$OS_NAME" in
-#   Linux)
-#     AC_MSG_NOTICE("0 Package not currently implemented")
-#     with_package=no
-#     ;;
-#   *BSD)
-#     AC_MSG_NOTICE("1 Package not currently implemented")
-#     with_package=no
-#     ;;
-#   *)
-#     AC_MSG_NOTICE("2 Package not currently implemented")
-#     with_package=no
-#     ;;
-#   esac
-# fi
-
 # Checks for programs.
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -3700,29 +3684,101 @@ have_texi2pdf=$HAVE_TEXI2PDF
 test "$HAVE_TEXI2ANY" == "non" && { $as_echo "$as_me:${as_lineno-$LINENO}: \"PDF documentation will not be built\"" >&5
 $as_echo "$as_me: \"PDF documentation will not be built\"" >&6;}
 
-# Package creation
-# if test "x$with_package" = "xyes" -a "$OS_NAME" = 'Linux'
-# then
-#   ccr_os_pkg_type=''
-#   if test -z "$ccr_os_pkg_type" -a -f /etc/os-release
-#   then
-#     eval `sed -e 's/^/ccr_os_/g' -e 's/$/;/g' /etc/os-release`
-#     if test -n "$ccr_os_ID"
-#     then
-#        case "$ccr_os_ID" in
-#        debian|ubuntu)
-#        ccr_os_pkg_type=deb
-#          ;;
-#        esac
-#     fi
-#   fi
-#   if test -z "$ccr_os_pkg_type" -a -f /etc/redhat-release
-#   then :
-#   fi
-#   if test -z "$ccr_os_pkg_type"
-#   then
-#     AC_MSG_NOTICE("Connot define package type")
-# fi
+ccr_os_pkg_type=''
+ccr_os_id=''
+if   test -f /etc/os-release
+then eval `sed -e 's/^/ccr_os_/g' -e 's/$/;/g' /etc/os-release`
+elif test -f /usr/lib/os-release
+then eval `sed -e 's/^/ccr_os_/g' -e 's/$/;/g' /usr/lib/os-release`
+fi
+
+case "${ccr_os_ID}" in
+debian|ubuntu)
+  # Extract the first word of "dpkg-deb", so it can be a program name with args.
+set dummy dpkg-deb; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_HAVE_DPKG_DEB+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$HAVE_DPKG_DEB"; then
+  ac_cv_prog_HAVE_DPKG_DEB="$HAVE_DPKG_DEB" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_HAVE_DPKG_DEB="true"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_prog_HAVE_DPKG_DEB" && ac_cv_prog_HAVE_DPKG_DEB="false"
+fi
+fi
+HAVE_DPKG_DEB=$ac_cv_prog_HAVE_DPKG_DEB
+if test -n "$HAVE_DPKG_DEB"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $HAVE_DPKG_DEB" >&5
+$as_echo "$HAVE_DPKG_DEB" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  $HAVE_DPKG_DEB && ccr_os_pkg_type=deb
+  ;;
+fedora|rhel)
+  # Extract the first word of "rpmbuild", so it can be a program name with args.
+set dummy rpmbuild; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_HAVE_RPMBUILD+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$HAVE_RPMBUILD"; then
+  ac_cv_prog_HAVE_RPMBUILD="$HAVE_RPMBUILD" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_HAVE_RPMBUILD="true"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_prog_HAVE_RPMBUILD" && ac_cv_prog_HAVE_RPMBUILD="false"
+fi
+fi
+HAVE_RPMBUILD=$ac_cv_prog_HAVE_RPMBUILD
+if test -n "$HAVE_RPMBUILD"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $HAVE_RPMBUILD" >&5
+$as_echo "$HAVE_RPMBUILD" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  $HAVE_RPMBUILD && ccr_os_pkg_type=rpm
+  ;;
+esac
+
+pkgdir=$ccr_os_pkg_type
+
 
 # Gets the libCCR needed for compilation
 if   test -d libCCR
@@ -4614,7 +4670,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files Makefile Makefile.inc src/Makefile doc/Makefile doc/Makefile.inc doc/en/Makefile doc/fr/Makefile"
+ac_config_files="$ac_config_files Makefile Makefile.inc src/Makefile doc/Makefile doc/Makefile.inc doc/en/Makefile doc/fr/Makefile deb/Makefile rpm/Makefile"
 
 
 
@@ -5319,6 +5375,8 @@ do
     "doc/Makefile.inc") CONFIG_FILES="$CONFIG_FILES doc/Makefile.inc" ;;
     "doc/en/Makefile") CONFIG_FILES="$CONFIG_FILES doc/en/Makefile" ;;
     "doc/fr/Makefile") CONFIG_FILES="$CONFIG_FILES doc/fr/Makefile" ;;
+    "deb/Makefile") CONFIG_FILES="$CONFIG_FILES deb/Makefile" ;;
+    "rpm/Makefile") CONFIG_FILES="$CONFIG_FILES rpm/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

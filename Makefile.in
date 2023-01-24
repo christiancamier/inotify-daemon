@@ -18,7 +18,8 @@ include @topdir@/Makefile.inc
 
 SUBDIRS = libCCR	\
 	  src		\
-	  doc
+	  doc		\
+	  @pkgdir@
 
 all install: disttree
 	$(SUBMAKE) _$@
@@ -43,8 +44,11 @@ clean distclean: Force
 disttree: Force
 	@ : ;												\
 	P=$(prefix);											\
-	for D in	$${P}/{bin,etc,usr}								\
+	for D in	$${P}/etc									\
 			$${P}/etc/inotify-daemon.d 							\
+			$${P}/usr									\
+			$${P}/usr/lib/systemd/system							\
+			$${P}/usr/sbin									\
 			$${P}/usr/share/{man,doc}							\
 			$${P}/usr/share/doc/inotify-daemon						\
 			$${P}/usr/share/man/man{5,8}							\
@@ -60,7 +64,7 @@ _all: Force
 _clean: Force
 	rm -fr $(ALL) $(COBJS) autom4te.cache
 	rm -fr *~ \#* *.i
-	#rm -fr t[aeiou]t[aeiou] foo bar quux foobar
+	rm -fr t[aeiou]t[aeiou] foo bar quux foobar
 
 _distclean: _clean
 	rm -fr Makefile Makefile.inc

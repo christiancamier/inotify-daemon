@@ -1,1 +1,7 @@
 #!/bin/bash
+
+if systemctl is-active inotify-daemon
+then
+  systemctl stop    inotify-daemon
+  systemctl disable inotify-daemon
+fi

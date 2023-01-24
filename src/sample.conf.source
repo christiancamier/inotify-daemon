@@ -4,7 +4,7 @@
 
 #
 # Uncomment this DIRECTORY section to follow some
-# events on the /tmp directory.
+# events on the /tmp directory in your log system.
 #
 
 #DIRECTORY /tmp
@@ -16,5 +16,5 @@
 #	EVENT CLOSE_WRITE	echo "%D: %F has been closed after changes"
 #	EVENT CREATE		echo "%D: New file %F"
 #	EVENT DELETE		echo "%D: File %F has been deleted"
-#	EVENT MODUFY		echo "%D: File %F has changed"
+#	EVENT MODIFY		echo "%D: File %F has changed"
 #END
