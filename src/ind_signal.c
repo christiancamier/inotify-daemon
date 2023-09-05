@@ -48,11 +48,11 @@ int in_signal_init(void)
 	if(-1 != in_signal_fd)
 		(void)close(in_signal_fd);
 
-	sigemptyset(&sigmsk);
-	sigaddset  (&sigmsk, SIGINT);
-	sigaddset  (&sigmsk, SIGTERM);
-	sigaddset  (&sigmsk, SIGCHLD);
-	sigaddset  (&sigmsk, SIGUSR1);
+	(void)sigemptyset(&sigmsk);
+	(void)sigaddset  (&sigmsk, SIGINT);
+	(void)sigaddset  (&sigmsk, SIGTERM);
+	(void)sigaddset  (&sigmsk, SIGCHLD);
+	(void)sigaddset  (&sigmsk, SIGUSR1);
 	if(-1 == sigprocmask(SIG_BLOCK, &sigmsk, NULL))
 	{
 		cc_log_perror("in_signal_init/sigprocmask");
@@ -100,9 +100,6 @@ void in_signal_process(void)
 				{
 					if(0 == pid)
 						break;
-					/****/
-					/* Insert here command exit control ***/
-					/****/
 					in_cmd_exited(pid);
 					if(WIFEXITED(sta))
 					{

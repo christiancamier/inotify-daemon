@@ -75,7 +75,6 @@ static struct in_cmd *cmd_runnings = NULL;
 static struct in_cmd *cmd_freelist = cmd_firstfree;
 static size_t         cmd_runcnt   = 0;
 
-//static int cmd_alloc(pid_t pid, int pfd)
 static int cmd_alloc(pid_t pid, int pfdE, int pfdS)
 {
 	struct in_cmd *new;
@@ -125,7 +124,7 @@ static size_t uint32_arg(char **bufptr, size_t *bufsiz, uint32_t value, int form
 		{
 			bit -= 1;
 			msk = (uint32_t)1 << bit;
-			cc_fmt_char(bufptr, bufsiz, msk == (value & msk) ? '1' : '0');
+			(void)cc_fmt_char(bufptr, bufsiz, msk == (value & msk) ? '1' : '0');
 		}
 		inc = 2;
 		break;
@@ -159,20 +158,20 @@ static int execute_command(in_directory_t *dir, in_action_t *act, struct in_even
 			switch(*(cmdptr + 1))
 			{
 			case '%': /* percent sign */
-				cc_fmt_char(&bufptr, &bufsiz, '%');
+				(void)cc_fmt_char(&bufptr, &bufsiz, '%');
 				cmdptr += 1;
 				break;
 			case 'c': /* Event cookie */
 				cmdptr += uint32_arg(&bufptr, &bufsiz, evt->cookie, *(cmdptr + 2));
 				break;
 			case 'D': /* Event directory */
-				cc_fmt_string(&bufptr, &bufsiz, dir->dir_name);
+				(void)cc_fmt_string(&bufptr, &bufsiz, dir->dir_name);
 				cmdptr += 1;
 				break;
 			case 'E': /* Event name */
 				(void)memset(evtbuf, 0, sizeof(evtbuf));
 				(void)in_events2str(evtbuf, sizeof(evtbuf), evt->mask & IN_ALL_EVENTS);
-				cc_fmt_string(&bufptr, &bufsiz, evtbuf);
+				(void)cc_fmt_string(&bufptr, &bufsiz, evtbuf);
 				cmdptr += 1;
 				break;
 			case 'e': /* Full event mask */
@@ -187,7 +186,7 @@ static int execute_command(in_directory_t *dir, in_action_t *act, struct in_even
 				cmdptr += 1;
 				break;
 			default:
-				cc_fmt_char(&bufptr, &bufsiz, '%');
+				(void)cc_fmt_char(&bufptr, &bufsiz, '%');
 				break;
 			}
 		}
@@ -202,29 +201,36 @@ static int execute_command(in_directory_t *dir, in_action_t *act, struct in_even
 		cmdshl = dir->dir_shell;
 	CC_LOG_DBGCOD("Command to execute: %s -c `%s'", cmdshl, buffer);
 	cc_log_info("Subprocess %d: Lauchning command %s", getpid(), buffer);
-	if(-1 != dir->dir_gid)
+
+	if(-1 == dir->dir_gid) dir->dir_gid = nogroup;
+	if(-1 != dir->dir_uid) dir->dir_uid = nobody;
+
+	if((-1 == setgroups(1, &(dir->dir_gid))) || (-1 == setregid(dir->dir_gid, dir->dir_gid)))
 	{
-		setgroups(1, &(dir->dir_gid));
-		setregid(dir->dir_gid, dir->dir_gid);
+		cc_log_perror("Cannot change groups for command");
+		cc_log_error("Exiting command");
+		exit(1);
 	}
-	else
+	if(-1 == setreuid(dir->dir_uid, dir->dir_uid))
 	{
-		setgroups(1, &nogroup);
-		setregid(nogroup, nogroup);
+		cc_log_perror("Cannot change groups for command");
+		cc_log_error("Exiting command");
+		exit(1);
 	}
-	if(-1 != dir->dir_uid) setreuid(dir->dir_uid, dir->dir_uid);
-	else                   setreuid(nobody,       nobody      );
+
 	if(-1 != ofdE)
 	{
-		close(2);
-		dup2(ofdE, 2);
-		close(ofdE);
+		(void)close(2);
+		if(-1 == dup2(ofdE, 2))
+			cc_log_perror("dup2 on stdout");
+		(void)close(ofdE);
 	}
 	if(-1 != ofdS)
 	{
-		close(1);
-		dup2(ofdS, 1);
-		close(ofdS);
+		(void)close(1);
+		if(-1 == dup2(ofdS, 1))
+			cc_log_perror("dup2 on stdout");
+		(void)close(ofdS);
 	}
 	(void)execl(cmdshl, cmdshl, "-c", buffer, NULL);
 	perror(buffer);
@@ -268,12 +274,16 @@ void in_cmd_exited(pid_t pid)
 			if(NULL != cmd->prv) cmd->prv->nxt = cmd->nxt;
 			else                 cmd_runnings  = cmd->nxt;
 			if(NULL != cmd->nxt) cmd->nxt->prv = cmd->prv;
-			close(cmd->pfdE);
-			close(cmd->pfdS);
-			cmd->nxt     = cmd_freelist;
-			cmd_freelist = cmd;
+			(void)close(cmd->pfdE);
+			(void)close(cmd->pfdS);
+			cmd->pid     = (pid_t)-1;
+			cmd->pfdE    = -1;
+			cmd->pfdS    = -1;
 			(void)memset(cmd->bufE, 0,sizeof(cmd->bufE));
 			(void)memset(cmd->bufS, 0,sizeof(cmd->bufS));
+			cmd->prv     = NULL;
+			cmd->nxt     = cmd_freelist;
+			cmd_freelist = cmd;
 			cmd_runcnt -= 1;
 			break;
 		}

@@ -185,7 +185,7 @@ static in_status_t kw_main_directory(context_t *context, keyword_t *keyword, cha
 
 	CC_LOG_DBGCOD("Entering kw_main_directory(%p, %p, %s, %s)", context, keyword, arg0, args);
 	if(0 == (argc = split(&args, argv, 1, 1)))
-		malformed(context, arg0);
+		return malformed(context, arg0);
 	path = *argv;
 	if(IN_ST_OK != (status = in_directory_create(path, &dire)))
 		return error(context, status, "%s: cannot allocate new directory", arg0);
@@ -199,7 +199,7 @@ static in_status_t kw_main_directory(context_t *context, keyword_t *keyword, cha
 
 static int glob_error(const char *epath, int eerrno)
 {
-	IN_PROTECT_ERRNO(cc_log_warning("%s: %s", epath, strerror(eerrno)));
+	IN_PROTECT_ERRNO((void)cc_log_warning("%s: %s", epath, strerror(eerrno)));
 	return 1;
 }
 
@@ -209,11 +209,12 @@ static in_status_t kw_main_include(context_t *context, keyword_t *keyword, char 
 	glob_t           gval;
 	char            *argv[1];
 	size_t           argc;
-	in_status_t      status = IN_ST_OK;;
+	in_status_t      status;
 	size_t           pathc;
 	char           **pathv;
 
 	CC_LOG_DBGCOD("Entering kw_main_include(%p, %p, %s, %s)", context, keyword, arg0, args);
+	status = IN_ST_OK;
 	if(0 == (argc = split(&args, argv, 1, 1)))
 		return malformed(context, arg0);
 	gval.gl_pathc = 0;
@@ -271,10 +272,11 @@ static in_status_t kw_dire_event(context_t *context, keyword_t *keyword, char *a
 	uint32_t        msk;
 	in_status_t     sta;
 	size_t          pos;
-	in_directory_t *dir = (in_directory_t *)context->ct_data;
+	in_directory_t *dir;
 	in_action_t    *act;
 
 	CC_LOG_DBGCOD("Entering kw_dire_event(%p, %p, %s, %s)", context, keyword, arg0, args);
+	dir = (in_directory_t *)context->ct_data;
 	evs = strtok_r(args, ifs, &rem);
 	if(NULL == evs || '\0' == *evs || NULL == rem || '\0' == *rem)
 		return error(context, IN_ST_VALUE_ERROR, "%s: incomplete directive", arg0);
@@ -287,7 +289,7 @@ static in_status_t kw_dire_event(context_t *context, keyword_t *keyword, char *a
 		in_events2str(evtstr, sizeof(evtstr), msk & dir->dir_mask);
 		return error(context, IN_ST_VALUE_ERROR, "Duplicate events : `%s'", evtstr);
 	}
-	while(isspace(*rem) && *rem) rem += 1;
+	while('\0' != *rem && isspace(*rem)) rem += 1;
 	for(act = dir->dir_actions, pos = 0; pos < dir->dir_nactions; act += 1, pos += 1)
 	{
 		if(0 == strcmp(rem, act->act_command))
@@ -309,7 +311,8 @@ event_found:
 static in_status_t str2integer(const char *string, long *retval)
 {
 	long  value;
-	char *endpt = NULL;
+	char *endpt;
+	endpt = NULL;
 	value = strtol(string, &endpt, 0);
 	if(value < 0 || NULL != endpt || '\0' != *endpt)
 		return IN_ST_VALUE_ERROR;
@@ -422,11 +425,11 @@ static in_status_t kw_logg_set(context_t *context, keyword_t *keyword, char *arg
 	switch(cc_log_tst_drv_opt(ldrv, argv[0], argv[1]))
 	{
 	case CC_LOG_BADOPTION:
-		return error(context, IN_ST_NOT_FOUND, "%s: Logging driver `%s' does not have `%s' as option", arg0, ldrv, argv[0]);
+		return error(context, IN_ST_NOT_FOUND, "%s: Log driver `%s' does not have `%s' as option", arg0, ldrv, argv[0]);
 	case CC_LOG_BADOPTVAL:
-		return error(context, IN_ST_VALUE_ERROR, "%s: Loggin driver `%s', option `%s', bad value `%s'", arg0, ldrv, argv[0], argv[1]);
+		return error(context, IN_ST_VALUE_ERROR, "%s: Log driver `%s', option `%s', bad value `%s'", arg0, ldrv, argv[0], argv[1]);
 	case CC_LOG_BADDRIVER:
-		return error(context, IN_ST_INTERNAL, "%s: Unknown driver `%s'", arg0, ldrv);
+		return error(context, IN_ST_INTERNAL, "%s: Unknown log driver `%s'", arg0, ldrv);
 	default:
 		break;
 	}
