@@ -67,7 +67,7 @@ _clean: Force
 	rm -fr t[aeiou]t[aeiou] foo bar quux foobar
 
 _distclean: _clean
-	rm -fr Makefile Makefile.inc
+	rm -fr Makefile Makefile.inc deb/Makefile rpm/Makefile
 	rm -fr config.log config.status
 	rm -fr autom4te.cache
 	rm -fr libCCR

@@ -29,8 +29,8 @@ set_file_attributes root root 644 usr/share/man/man8/inotify-daemon.8.gz
 
 if [ ! -f ${prefix}/etc/inotify-deamon.conf ]
 then
-    cp ${prefix}/usr/share/doc/inotify-daemon/inotify-daemon.conf-template ${prefix}/etc/inotify-deamon.conf
-    chmod 644 ${prefix}/etc/inotify-deamon.conf
+    cp ${prefix}/usr/share/doc/inotify-daemon/inotify-daemon.conf-template ${prefix}/etc/inotify-daemon.conf
+    chmod 644 ${prefix}/etc/inotify-daemon.conf
 fi
 
 systemctl enable inotify-deamon
