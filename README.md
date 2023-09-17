@@ -6,6 +6,10 @@ initiate actions when some file system events occur. Inotify-daemon is
 a service that allows, on given directories, to initiate an action
 when certain events of the file system occur.
 
+## License
+The rights to use this software are governed by the CeCILL-B license.
+For more information see the file "Licence_CeCILL-B_V1-en.txt".
+
 ## Compatibility
 Inotify-daemon runs only on Linux system having the inotify functions.
 

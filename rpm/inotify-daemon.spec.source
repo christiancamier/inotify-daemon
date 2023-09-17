@@ -11,7 +11,7 @@ Summary:	Inotify-daemon file events driven scheduler.
 BuildArch:	x86_64
 
 Group:		System Environment/Daemons
-License:	BSD
+License:	CeCILL-B
 URL:		https://promethee-services.fr
 Source0:	%{_topdir}/dist
 Prefix:		${clean_prefix}

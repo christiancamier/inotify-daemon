@@ -4,7 +4,8 @@ Section: base
 Priority: optional
 Architecture: amd64
 Depends: libc6
-Maintainer: Christian CAMIER  <christian.c@promethee-services>
+Maintainer: Christian CAMIER <christian.c@promethee-services>
+Uploaders: Quentin PERIDON <some@email.xx>
 Description: Inotify-daemon is a daemon that allows, on given directories, to
   initiate actions when some file system events occur. Inotify-daemon is
   a service that allows, on given directories, to initiate an action

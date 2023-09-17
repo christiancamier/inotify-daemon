@@ -9,26 +9,48 @@
 
 @ifinfo
 Ce fichier documente l'utilisation de inotify-d aemon, un service qui
-gere les @'ev@'enements du système de fichiers sur des r@'epertoires
+gere les @'ev@'enements du syst@`eme de fichiers sur des r@'epertoires
 d@'efinis.
 @end ifinfo
 
 @ifnottex @c texi2pdf don't understand copying and insertcopying ???
 @c modifications must also be done in the titlepage
 @copying
-Copyright @copyright{} 2022 Promethee Services@*
-Copyright @copyright{} 2022 Christian CAMIER <christian.c@@promethee.services>@*
-Permission to use, copy, modify, and distribute this software for any
-purpose with or without fee is hereby granted, provided that the above
-copyright notice and this permission notice appear in all copies.
 
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+Copyright: Christian CAMIER & Quentin P@'ERIDON 2022
+
+christian.c@@promethee.services
+
+Ce logiciel est un programme informatique servant @`a d@'efinir des
+actions lors d'@'ev@`enements sur certains r@'epertoires.
+
+Ce logiciel est r@'egi par la licence CeCILL-B soumise au droit français et
+respectant les principes de diffusion des logiciels libres. Vous pouvez
+utiliser, modifier et/ou redistribuer ce programme sous les conditions
+de la licence CeCILL-B telle que diffus@'ee par le CEA, le CNRS et l'INRIA 
+sur le site "http://www.cecill.info".
+
+En contrepartie de l'accessibilit@'e au code source et des droits de copie,
+de modification et de redistribution accord@'es par cette licence, il n'est
+offert aux utilisateurs qu'une garantie limit@'ee.  Pour les mêmes raisons,
+seule une responsabilit@'e restreinte p@`ese sur l'auteur du programme,  le
+titulaire des droits patrimoniaux et les conc@'edants successifs.
+
+A cet @'egard  l'attention de l'utilisateur est attir@'ee sur les risques
+associ@'es au chargement,  @`a l'utilisation,  @`a la modification et/ou au
+d@'eveloppement et @`a la reproduction du logiciel par l'utilisateur @'etant 
+donn@'e sa sp@'ecificit@'e de logiciel libre, qui peut le rendre complexe @`a 
+manipuler et qui le r@'eserve donc @`a des d@'eveloppeurs et des professionnels
+avertis poss@'edant  des  connaissances  informatiques approfondies.  Les
+utilisateurs sont donc invit@'es @`a charger  et  tester  l'ad@'equation  du
+logiciel @`a leurs besoins dans des conditions permettant d'assurer la
+s@'ecurit@'e de leurs syst@`emes et ou de leurs donn@'ees et, plus g@'en@'eralement, 
+@`a l'utiliser et l'exploiter dans les mêmes conditions de s@'ecurit@'e. 
+
+Le fait que vous puissiez acc@'eder @`a cet en-tête signifie que vous avez 
+pris connaissance de la licence CeCILL-B, et que vous en avez accept@'e les
+termes.
 @end copying
 @c WTF does the info get the copying output and the plaintext output not ????
 @ifplaintext
@@ -78,7 +100,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 @end ifhtml
 
 Ce fichier documente l'utilisation de inotify-daemon, un d@'emon qui
-gere les @'ev@'enements du système de fichiers sur des r@'epertoires
+gere les @'ev@'enements du syst@`eme de fichiers sur des r@'epertoires
 d@'efinis.
 
 Ce document s'applique @`a la version @strong{@value{VERSION}} d'Inotify-daemon.
@@ -180,7 +202,7 @@ des traces d'ex@'ecution. Pour plus d'information, voir la partie
 ``Gestion des journaux syst@`emes(logs)''.
 @item @strong{l} lvl @tab @strong{loglevel}=lvl
 @tab D@'efini @`a partir de quel niveau les traces applicatives sont
-consignées.
+consign@'ees.
 @item @strong{o} o=v @tab @strong{logoption}=o=v
 @tab D@'efini une option du syst@'eme de journalisation. Pour plus
 d'information, voir la partie ``Gestion des journaux

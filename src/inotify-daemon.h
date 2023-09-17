@@ -1,18 +1,36 @@
-/*
- * Copyright (c) 2022
- *      Christian CAMIER <christian.c@promethee.services>
- *
- * Permission to use, copy, modify, and distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+/* 
+ * Copyright: Christian CAMIER & Quentin PERIDON 2022
+ * 
+ * christian.c@promethee.services
+ * 
+ * This software is a computer program whose purpose is to manage filesystems
+ * events on defined directories.
+ * 
+ * This software is governed by the CeCILL-B license under French law and
+ * abiding by the rules of distribution of free software.  You can  use, 
+ * modify and/ or redistribute the software under the terms of the CeCILL-B
+ * license as circulated by CEA, CNRS and INRIA at the following URL
+ * "http://www.cecill.info". 
+ * 
+ * As a counterpart to the access to the source code and  rights to copy,
+ * modify and redistribute granted by the license, users are provided only
+ * with a limited warranty  and the software's author,  the holder of the
+ * economic rights,  and the successive licensors  have only  limited
+ * liability. 
+ * 
+ * In this respect, the user's attention is drawn to the risks associated
+ * with loading,  using,  modifying and/or developing or reproducing the
+ * software by the user in light of its specific status of free software,
+ * that may mean  that it is complicated to manipulate,  and  that  also
+ * therefore means  that it is reserved for developers  and  experienced
+ * professionals having in-depth computer knowledge. Users are therefore
+ * encouraged to load and test the software's suitability as regards their
+ * requirements in conditions enabling the security of their systems and/or 
+ * data to be ensured and,  more generally, to use and operate it in the 
+ * same conditions as regards security. 
+ * 
+ * The fact that you are presently reading this means that you have had
+ * knowledge of the CeCILL-B license and that you accept its terms.
  */
 
 #ifndef __INOTIFY_DAEMON_H__
@@ -82,6 +100,40 @@ typedef enum in_status_en {
 	IN_ST_EXISTS
 } in_status_t;
 
+typedef enum in_log_level_en {
+	IN_LOG_GET      = -1,
+	IN_LOG_EMERG	=  0,
+	IN_LOG_ALERT    =  1,
+	IN_LOG_CRIT     =  2,
+	IN_LOG_ERR      =  3,
+	IN_LOG_WARNING  =  4,
+	IN_LOG_NOTICE   =  5,
+	IN_LOG_INFO     =  6,
+	IN_LOG_DEBUG    =  7
+} in_log_level_t;
+
+struct in_log_driver_info {
+	const char *name;
+	const char *desc;
+};
+
+#if defined(_STDARG_H) || defined(_ANSI_STDARG_H_) || defined(_VA_LIST_DECLARED)
+struct in_logger_st {
+	struct in_logger_st  *next;
+	const char           *name;
+	const char           *desc;
+	int                 (*sopt)(const char *, const char *, int);
+	void                (*open )(void);
+	void                (*close)(void);
+	void                (*log  )(int, const char *, va_list);
+};
+
+extern void            in_log_register       (struct in_logger_st *);
+#define IN_LOG_REGISTER(aname, adesc, asopt, aopen, aclose, alog)	\
+	static struct in_logger_st drv_##aname = { .next = NULL, .name = #aname, .desc = adesc, .sopt = asopt, .open = aopen, .close = aclose, .log = alog }; \
+	static __attribute__((constructor)) void ctor_##aname(void) { in_log_register(&drv_##aname); }
+#endif	
+
 /*
  * Helper macros
  */
@@ -141,9 +193,20 @@ extern int         in_events_init(void);
 extern void        in_events_process(void);
 extern in_status_t in_events_terminate(void);
 
+/* ind_log.c */
+#if defined(DEBUG)
+extern void in_log_code_debug(const char *, size_t, const char *, const char *, ...);
+#define IN_CODE_DEBUG(...)	in_log_code_debug(__FILE__, __LINE__, __func__, __VA_ARGS__)
+#else
+#define IN_CODE_DEBUG(...)
+#endif
 /* ind_signal.c */
 extern int  in_signal_init(void);
 extern void in_signal_process(void);
 extern void in_signal_terminate(void);
+
+/* inotify_daemon.c */
+extern void in_reread_configuration(void);
+extern int  main(int, char **);
 
 #endif /* !__INOTIFY_DAEMON_H__ */
