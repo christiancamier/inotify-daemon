@@ -1366,7 +1366,7 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-Insert full debugging traces
+  --enable-debug          Compile with full debugging traces
 
 Some influential environment variables:
   CXX         C++ compiler command

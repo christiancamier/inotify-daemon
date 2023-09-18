@@ -49,10 +49,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <CCR/cc_fmt.h>
-#include <CCR/cc_forcefork.h>
-#include <CCR/cc_log.h>
-
 #include "inotify-daemon.h"
 #include "ind_tunables.h"
 
@@ -74,8 +70,8 @@ struct in_cmd {
 	char           bufS[256];
 };
 
-static cc_log_level_t stdoutlvl = CC_LOG_DEBUG;
-static cc_log_level_t stderrlvl = CC_LOG_NOTICE;
+static in_log_level_t stdoutlvl = IN_LOG_DEBUG;
+static in_log_level_t stderrlvl = IN_LOG_NOTICE;
 
 /* Initial freelist */
 static struct in_cmd  cmd_firstfree[] = {
@@ -97,20 +93,21 @@ static int cmd_alloc(pid_t pid, int pfdE, int pfdS)
 {
 	struct in_cmd *new;
 
-	CC_LOG_DBGCOD("Entering cmd_alloc(%d, %d, %d)", pid, pfdE, pfdS);
+	IN_CODE_DEBUG("Entering (%d, %d, %d)", pid, pfdE, pfdS);
 
 	if(NULL == cmd_freelist)
 	{
-		CC_LOG_DBGCOD("Allocating new in_cmd structure");
+		IN_CODE_DEBUG("Allocating new in_cmd structure");
 		if(NULL == (new = (struct in_cmd *)malloc(sizeof(struct in_cmd))))
 		{
-			cc_log_error("Cannot allocate %lu bytes", sizeof(struct in_cmd));
+			in_log_error("Cannot allocate %lu bytes", sizeof(struct in_cmd));
+			IN_CODE_DEBUG("Return -1");
 			return -1;
 		}
 	}
 	else
 	{
-		CC_LOG_DBGCOD("Taking in_cmd structure in freelist");
+		IN_CODE_DEBUG("Taking in_cmd structure in freelist");
 		new          = cmd_freelist;
 		cmd_freelist = cmd_freelist->nxt;
 	}
@@ -126,6 +123,7 @@ static int cmd_alloc(pid_t pid, int pfdE, int pfdS)
 	*(new->bufE) = '\0';
 	*(new->bufS) = '\0';
 	cmd_runcnt += 1;
+	IN_CODE_DEBUG("Return 0");
 	return 0;
 }
 
@@ -135,6 +133,7 @@ static size_t uint32_arg(char **bufptr, size_t *bufsiz, uint32_t value, int form
 	size_t   bit;
 	uint32_t msk;
 
+	IN_CODE_DEBUG("Entering (%p, %p (%lu), %u, %d (%c))", bufptr, bufsiz, *bufsiz, value, format, format);
 	switch(format)
 	{
 	case 'b':
@@ -142,16 +141,17 @@ static size_t uint32_arg(char **bufptr, size_t *bufsiz, uint32_t value, int form
 		{
 			bit -= 1;
 			msk = (uint32_t)1 << bit;
-			(void)cc_fmt_char(bufptr, bufsiz, msk == (value & msk) ? '1' : '0');
+			in_fmt_char(bufptr, bufsiz, msk == (value & msk) ? '1' : '0');
 		}
 		inc = 2;
 		break;
-	case 'd': (void)cc_fmt_fmt(bufptr, bufsiz, "%u",    value); inc = 2; break;
-	case 'o': (void)cc_fmt_fmt(bufptr, bufsiz, "%011o", value); inc = 2; break;
-	case 'X': (void)cc_fmt_fmt(bufptr, bufsiz, "%08X",  value); inc = 2; break;
-	case 'x': (void)cc_fmt_fmt(bufptr, bufsiz, "%08x",  value); inc = 2; break;
-	default:  (void)cc_fmt_fmt(bufptr, bufsiz, "%u",    value); inc = 1; break;
+	case 'd': in_fmt_fmt(bufptr, bufsiz, "%u",    value); inc = 2; break;
+	case 'o': in_fmt_fmt(bufptr, bufsiz, "%011o", value); inc = 2; break;
+	case 'X': in_fmt_fmt(bufptr, bufsiz, "%08X",  value); inc = 2; break;
+	case 'x': in_fmt_fmt(bufptr, bufsiz, "%08x",  value); inc = 2; break;
+	default:  in_fmt_fmt(bufptr, bufsiz, "%u",    value); inc = 1; break;
 	}
+	IN_CODE_DEBUG("Return %d", inc);
 	return inc;
 }
 
@@ -164,7 +164,7 @@ static int execute_command(in_directory_t *dir, in_action_t *act, struct in_even
 	const char   *cmdshl = _PATH_BSHELL;
 	char          evtbuf[16];
 
-	CC_LOG_DBGCOD("Entering execute_command(%p, %p, %p)", dir, act, evt);
+	IN_CODE_DEBUG("Entering (%p, %p, %p)", dir, act, evt);
 
 	(void)memset(buffer, 0, bufsiz);
 	bufptr  = buffer;
@@ -176,63 +176,63 @@ static int execute_command(in_directory_t *dir, in_action_t *act, struct in_even
 			switch(*(cmdptr + 1))
 			{
 			case '%': /* percent sign */
-				(void)cc_fmt_char(&bufptr, &bufsiz, '%');
+				in_fmt_char(&bufptr, &bufsiz, '%');
 				cmdptr += 1;
 				break;
 			case 'c': /* Event cookie */
 				cmdptr += uint32_arg(&bufptr, &bufsiz, evt->cookie, *(cmdptr + 2));
 				break;
 			case 'D': /* Event directory */
-				(void)cc_fmt_string(&bufptr, &bufsiz, dir->dir_name);
+				in_fmt_string(&bufptr, &bufsiz, dir->dir_name);
 				cmdptr += 1;
 				break;
 			case 'E': /* Event name */
 				(void)memset(evtbuf, 0, sizeof(evtbuf));
 				(void)in_events2str(evtbuf, sizeof(evtbuf), evt->mask & IN_ALL_EVENTS);
-				(void)cc_fmt_string(&bufptr, &bufsiz, evtbuf);
+				in_fmt_string(&bufptr, &bufsiz, evtbuf);
 				cmdptr += 1;
 				break;
 			case 'e': /* Full event mask */
 				cmdptr += uint32_arg(&bufptr, &bufsiz, evt->mask, *(cmdptr + 2));
 				break;
 			case 'F': /* Filename */
-				(void)cc_fmt_string(&bufptr, &bufsiz, evt->evtname);
+				in_fmt_string(&bufptr, &bufsiz, evt->evtname);
 				cmdptr += 1;
 				break;
 			case 'O': /* Old filename (RENAME) */
-				(void)cc_fmt_string(&bufptr, &bufsiz, evt->oldname);
+				in_fmt_string(&bufptr, &bufsiz, evt->oldname);
 				cmdptr += 1;
 				break;
 			default:
-				(void)cc_fmt_char(&bufptr, &bufsiz, '%');
+				in_fmt_char(&bufptr, &bufsiz, '%');
 				break;
 			}
 		}
 		else
 		{
-			cc_fmt_char(&bufptr, &bufsiz, *cmdptr);
+			in_fmt_char(&bufptr, &bufsiz, *cmdptr);
 		}
 		cmdptr += 1;
 	}
 	*bufptr = '\0';
 	if(dir->dir_shell)
 		cmdshl = dir->dir_shell;
-	CC_LOG_DBGCOD("Command to execute: %s -c `%s'", cmdshl, buffer);
-	cc_log_info("Subprocess %d: Lauchning command %s", getpid(), buffer);
+	IN_CODE_DEBUG("Command to execute: %s -c `%s'", cmdshl, buffer);
+	in_log_info("Subprocess %d: Lauchning command %s", getpid(), buffer);
 
 	if(-1 == dir->dir_gid) dir->dir_gid = nogroup;
 	if(-1 != dir->dir_uid) dir->dir_uid = nobody;
 
 	if((-1 == setgroups(1, &(dir->dir_gid))) || (-1 == setregid(dir->dir_gid, dir->dir_gid)))
 	{
-		cc_log_perror("Cannot change groups for command");
-		cc_log_error("Exiting command");
+		in_log_perror("Cannot change groups for command");
+		in_log_error("Exiting command");
 		exit(1);
 	}
 	if(-1 == setreuid(dir->dir_uid, dir->dir_uid))
 	{
-		cc_log_perror("Cannot change groups for command");
-		cc_log_error("Exiting command");
+		in_log_perror("Cannot change groups for command");
+		in_log_error("Exiting command");
 		exit(1);
 	}
 
@@ -240,14 +240,14 @@ static int execute_command(in_directory_t *dir, in_action_t *act, struct in_even
 	{
 		(void)close(2);
 		if(-1 == dup2(ofdE, 2))
-			cc_log_perror("dup2 on stdout");
+			in_log_perror("dup2 on stdout");
 		(void)close(ofdE);
 	}
 	if(-1 != ofdS)
 	{
 		(void)close(1);
 		if(-1 == dup2(ofdS, 1))
-			cc_log_perror("dup2 on stdout");
+			in_log_perror("dup2 on stdout");
 		(void)close(ofdS);
 	}
 	(void)execl(cmdshl, cmdshl, "-c", buffer, NULL);
@@ -257,7 +257,7 @@ static int execute_command(in_directory_t *dir, in_action_t *act, struct in_even
 
 size_t in_cmd_count(struct pollfd *pfds)
 {
-	CC_LOG_DBGCOD("Entering in_cmd_count(%p)", pfds);
+	IN_CODE_DEBUG("Entering in_cmd_count(%p)", pfds);
 
 	if(NULL != pfds && NULL != cmd_runnings)
 	{
@@ -282,13 +282,13 @@ void in_cmd_exited(pid_t pid)
 {
 	struct in_cmd *cmd;
 
-	CC_LOG_DBGCOD("Entering in_cmd_exited(%d)", pid);
+	IN_CODE_DEBUG("Entering in_cmd_exited(%d)", pid);
 	for(cmd = cmd_runnings; NULL != cmd; cmd = cmd->nxt)
 	{
 		if(pid == cmd->pid)
 		{
-			if('\0' != cmd->bufS[0]) cc_log_log(stdoutlvl, "Subprocess %d: %s", cmd->pid, cmd->bufS);
-			if('\0' != cmd->bufE[0]) cc_log_log(stderrlvl, "Subprocess %d: %s", cmd->pid, cmd->bufE);
+			if('\0' != cmd->bufS[0]) in_log_log(stdoutlvl, "Subprocess %d: %s", cmd->pid, cmd->bufS);
+			if('\0' != cmd->bufE[0]) in_log_log(stderrlvl, "Subprocess %d: %s", cmd->pid, cmd->bufE);
 			if(NULL != cmd->prv) cmd->prv->nxt = cmd->nxt;
 			else                 cmd_runnings  = cmd->nxt;
 			if(NULL != cmd->nxt) cmd->nxt->prv = cmd->prv;
@@ -309,7 +309,7 @@ void in_cmd_exited(pid_t pid)
 	return;
 }
 
-static void cmd_do_log(struct in_cmd *cmd, char *buf, int fd, cc_log_level_t lvl)
+static void cmd_do_log(struct in_cmd *cmd, char *buf, int fd, in_log_level_t lvl)
 {
 	ssize_t  nbrds;
 	char     rbuf[256];
@@ -318,7 +318,7 @@ static void cmd_do_log(struct in_cmd *cmd, char *buf, int fd, cc_log_level_t lvl
 	
 	if(-1 == (nbrds = read(fd, rbuf, sizeof(rbuf) - 1)))
 	{
-		cc_log_notice("Subprocess %d: read error %d (%s)", errno, strerror(errno));
+		in_log_notice("Subprocess %d: read error %d (%s)", errno, strerror(errno));
 		return;
 	}
 	rbuf[nbrds] = '\0';
@@ -327,7 +327,7 @@ static void cmd_do_log(struct in_cmd *cmd, char *buf, int fd, cc_log_level_t lvl
 		if('\n' == *estr)
 		{
 			*(estr++) = '\0';
-			cc_log_log(lvl, "Subprocess %d: %s%s", cmd->pid, buf, bstr);
+			in_log_log(lvl, "Subprocess %d: %s%s", cmd->pid, buf, bstr);
 			buf[0] = '\0';
 			bstr = estr;
 		}
@@ -343,7 +343,7 @@ int in_cmd_log(struct pollfd *pfds, size_t nfds)
 	struct in_cmd *cmd;
 	int            ret = 0;
 
-	CC_LOG_DBGCOD("Entering in_cmd_log(%p, %lu)", pfds, nfds);
+	IN_CODE_DEBUG("Entering in_cmd_log(%p, %lu)", pfds, nfds);
 	for(pfd = pfds; nfds > 0; pfd += 1, nfds -= 1)
 	{
 		if(pfd->revents & POLLIN)
@@ -376,7 +376,7 @@ in_status_t in_cmd_run(struct in_event_st *event)
 	in_directory_t  *dir;
 	in_status_t      sta = IN_ST_OK;
 
-	CC_LOG_DBGCOD(
+	IN_CODE_DEBUG(
 		"Entering in_cmd_run(%p [wd: %d mask: %04X cookie: %04X len: %u evtname: %s oldname: %s)",
 		event, event->wd, event->mask, event->cookie, event->len, event->evtname, event->oldname
 		);
@@ -391,13 +391,13 @@ in_status_t in_cmd_run(struct in_event_st *event)
 			int pfdS[2];
 
 			if(-1 == (prtE = pipe2(pfdE, O_DIRECT)))
-				cc_log_perror("pipe2 (stderr)");
+				in_log_perror("pipe2 (stderr)");
 			if(-1 == (prtS = pipe2(pfdS, O_DIRECT)))
-				cc_log_perror("pipe2 (stderr)");
-			switch(pid = cc_forcefork(10))
+				in_log_perror("pipe2 (stderr)");
+			switch(pid = in_forcefork(10))
 			{
 			case -1:
-				cc_log_perror("in_execute/fork");
+				in_log_perror("in_execute/fork");
 				break;
 			case  0:
 				if(-1 != prtE) close(pfdE[0]);
@@ -410,7 +410,7 @@ in_status_t in_cmd_run(struct in_event_st *event)
 					close(pfdS[1]);
 					if(-1 == cmd_alloc(pid, pfdE[0],pfdS[0]))
 					{
-						cc_log_info("Subprocess pid = %d outputs will not be logged", pid);
+						in_log_info("Subprocess pid = %d outputs will not be logged", pid);
 						close(pfdE[0]);
 						close(pfdS[0]);
 					}
@@ -424,7 +424,7 @@ in_status_t in_cmd_run(struct in_event_st *event)
 			}
 		}
 	}
-	cc_log_error("Directory %s: event %X not defined", dir->dir_name, event->mask);
+	in_log_error("Directory %s: event %X not defined", dir->dir_name, event->mask);
 	sta = IN_ST_INTERNAL;
 end:
 	return sta;
@@ -432,8 +432,8 @@ end:
 
 static int log_setopt(const char *opt, const char *val, void *dat, int sim)
 {
-	cc_log_level_t  newlevel;
-	cc_log_level_t *lvlvar = NULL;
+	in_log_level_t  newlevel;
+	in_log_level_t *lvlvar = NULL;
 
 	(void)dat;
 
@@ -441,19 +441,19 @@ static int log_setopt(const char *opt, const char *val, void *dat, int sim)
 	{
 	case  1: lvlvar = &stdoutlvl; break;
 	case  2: lvlvar = &stderrlvl; break;
-	default: return CC_LOG_BADOPTION;
+	default: return IN_LOG_BADOPTION;
 	}
-	if((cc_log_level_t)-1 == (newlevel = cc_log_level_by_name(val)))
-		return CC_LOG_BADOPTVAL;
+	if((in_log_level_t)-1 == (newlevel = in_log_level_by_name(val)))
+		return IN_LOG_BADOPTVAL;
 
 	if(!sim)
 		*lvlvar = newlevel;
-	return CC_LOG_OK;
+	return IN_LOG_OK;
 }
 
 static __attribute__((constructor)) void ctor_command(void)
 {
-	cc_log_add_option("act_out_lvl", log_setopt, (void *)1);
-	cc_log_add_option("act_err_lvl", log_setopt, (void *)2);
+	in_log_add_option("act_out_lvl", log_setopt, (void *)1);
+	in_log_add_option("act_err_lvl", log_setopt, (void *)2);
 	return;
 }

@@ -39,7 +39,10 @@ AC_INIT([inotify-daemon], [0.1], [christian.c@promethee.services])
 AC_CONFIG_SRCDIR([src/ind_main.c])
 AC_CONFIG_HEADERS([src/ind_config.h])
 
-AC_ARG_ENABLE([debug], [Insert full debugging traces], [AC_DEFINE([DEBUG], [], [Undef for debugging])])
+AC_ARG_ENABLE(
+	[debug],
+	AS_HELP_STRING([--enable-debug], [Compile with full debugging traces]),
+	[AC_DEFINE([DEBUG], [], [Define to compile with full debugging traces])])
 
 # AC_ARG_WITH([package], AS_HELP_STRING([--with-package], [Do not install, create package]))
 

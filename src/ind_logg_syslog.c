@@ -42,9 +42,7 @@
 #include <strings.h>
 #include <syslog.h>
 
-#include <CCR/cc_fmt.h>
-#include <CCR/cc_log.h>
-#include <CCR/cc_nextopt.h>
+#include "inotify-daemon.h"
 
 static int  slog_sopt (const char *, const char *, int);
 static void slog_open (void);
@@ -120,19 +118,19 @@ static int slog_val_search(const char *name, const struct slog_values_st *values
 		if(0 == strcasecmp(pva->v_name, name))
 			return pva->v_val;
 	}
-	return CC_LOG_BADOPTVAL;
+	return IN_LOG_BADOPTVAL;
 }
 
 static int slog_setval_facility(const char *value, int simu)
 {
-	int  ret = CC_LOG_BADOPTVAL;
+	int  ret = IN_LOG_BADOPTVAL;
 	int  val;
 
-	if(CC_LOG_BADOPTVAL != (val = slog_val_search(value, slog_vfacilities)))
+	if(IN_LOG_BADOPTVAL != (val = slog_val_search(value, slog_vfacilities)))
 	{
 		if(!simu)
 			slog_facility = val;
-		ret = CC_LOG_OK;
+		ret = IN_LOG_OK;
 	}
 	return ret;
 }
@@ -143,10 +141,10 @@ static int slog_setval_ident(const char *value, int simu)
 	{
 		char   *ipt = slog_ident;
 		size_t  isz = sizeof(slog_ident) - 1;
-		(void)cc_fmt_string(&ipt, &isz, value);
+		in_fmt_string(&ipt, &isz, value);
 		*ipt = '\0';
 	}
-	return CC_LOG_OK;
+	return IN_LOG_OK;
 }
 
 static int slog_setval_options(const char *value, int simu)
@@ -156,7 +154,7 @@ static int slog_setval_options(const char *value, int simu)
 	const char *pval = value;
 	int         copt;
 	int         opts = 0;
-	int         retv = CC_LOG_OK;
+	int         retv = IN_LOG_OK;
 
 	if(strcasecmp("none", value))
 	{
@@ -164,17 +162,17 @@ static int slog_setval_options(const char *value, int simu)
 		return retv;
 	}
 	
-	while(NULL != (popt = cc_next_opt((char **)&pval, buff, sizeof(buff), ",|")))
+	while(NULL != (popt = in_next_option((char **)&pval, buff, sizeof(buff), ",|")))
 	{
-		if(CC_LOG_BADOPTVAL == (copt = slog_val_search(popt, slog_voptions)))
+		if(IN_LOG_BADOPTVAL == (copt = slog_val_search(popt, slog_voptions)))
 		{
-			retv = CC_LOG_BADOPTVAL;
+			retv = IN_LOG_BADOPTVAL;
 			break;
 		}
 		if(!simu)
 			opts |= copt;
 	}
-	if(CC_LOG_OK != retv)
+	if(IN_LOG_OK != retv)
 		slog_options = opts;
 
 	return retv;
@@ -183,7 +181,7 @@ static int slog_setval_options(const char *value, int simu)
 static int slog_sopt(const char *option, const char *value, int simu)
 {
 	struct slog_sopts_st *pop;
-	int                   ret = CC_LOG_BADOPTION;
+	int                   ret = IN_LOG_BADOPTION;
 	for(pop = slog_sopts; pop->opt_name; pop += 1)
 	{
 		if(0 == strcasecmp(pop->opt_name, option))
@@ -218,7 +216,7 @@ static void slog_log(int level, const char *format, va_list ap)
 	return;
 }
 
-CC_LOG_REGISTER(
+IN_LOG_REGISTER(
 	syslog,
 	"syslog logging driver",
 	slog_sopt,

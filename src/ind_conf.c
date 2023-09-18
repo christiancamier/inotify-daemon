@@ -50,9 +50,6 @@
 #include <pwd.h>
 #include <grp.h>
 
-#include <CCR/cc_log.h>
-#include <CCR/cc_pidfile.h>
-
 #include "inotify-daemon.h"
 #include "ind_tunables.h"
 
@@ -163,7 +160,7 @@ static in_status_t error(context_t *context, in_status_t status, const char *for
 	va_start(ap, format);
 	vsnprintf(bu, sizeof(bu), format, ap);
 	va_end(ap);
-	cc_log_error("Error %s [%lu]: %s\n", IN_IFNULL(char, context->ct_filename, ""), (unsigned long)(context->ct_lineno), bu);
+	in_log_error("Error %s [%lu]: %s\n", IN_IFNULL(char, context->ct_filename, ""), (unsigned long)(context->ct_lineno), bu);
 	errno = er;
 	return status;
 }
@@ -184,7 +181,7 @@ static in_status_t warning(context_t *context, in_status_t status, const char *f
 	va_start(ap, format);
 	vsnprintf(bu, sizeof(bu), format, ap);
 	va_end(ap);
-	cc_log_warning("Warning %s [%lu]: %s\n", IN_IFNULL(char, context->ct_filename, ""), (unsigned long)(context->ct_lineno), bu);
+	in_log_warning("Warning %s [%lu]: %s\n", IN_IFNULL(char, context->ct_filename, ""), (unsigned long)(context->ct_lineno), bu);
 	errno = er;
 	return status;
 }
@@ -201,23 +198,27 @@ static in_status_t kw_main_directory(context_t *context, keyword_t *keyword, cha
 	in_directory_t *dire;
 	in_status_t     status;
 
-	CC_LOG_DBGCOD("Entering kw_main_directory(%p, %p, %s, %s)", context, keyword, arg0, args);
+	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	if(0 == (argc = split(&args, argv, 1, 1)))
 		return malformed(context, arg0);
 	path = *argv;
 	if(IN_ST_OK != (status = in_directory_create(path, &dire)))
+	{
+		IN_CODE_DEBUG("Return %d", (int)status);
 		return error(context, status, "%s: cannot allocate new directory", arg0);
+	}
 	context->ct_data = (void *)dire;
 	status = subprocess_lines(context, kw_dire);
 	context->ct_data = NULL;
 	if(-1 == dire->dir_uid) dire->dir_uid = 0;
 	if(-1 == dire->dir_gid) dire->dir_gid = 0;
+	IN_CODE_DEBUG("Return %d", (int)status);
 	return status;
 }
 
 static int glob_error(const char *epath, int eerrno)
 {
-	IN_PROTECT_ERRNO((void)cc_log_warning("%s: %s", epath, strerror(eerrno)));
+	IN_PROTECT_ERRNO((void)in_log_warning("%s: %s", epath, strerror(eerrno)));
 	return 1;
 }
 
@@ -231,10 +232,13 @@ static in_status_t kw_main_include(context_t *context, keyword_t *keyword, char 
 	size_t           pathc;
 	char           **pathv;
 
-	CC_LOG_DBGCOD("Entering kw_main_include(%p, %p, %s, %s)", context, keyword, arg0, args);
+	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	status = IN_ST_OK;
 	if(0 == (argc = split(&args, argv, 1, 1)))
+	{
+		IN_CODE_DEBUG("Return %d", (int)status);
 		return malformed(context, arg0);
+	}
 	gval.gl_pathc = 0;
 	gval.gl_pathv = NULL;
 	gval.gl_offs  = 0;
@@ -243,11 +247,13 @@ static in_status_t kw_main_include(context_t *context, keyword_t *keyword, char 
 		switch(gret)
 		{
 		case GLOB_NOSPACE:
+			IN_CODE_DEBUG("Return %d", IN_ST_SYSTEM_ERROR);
 			return error(context, IN_ST_SYSTEM_ERROR, "%s: insufisant memory space", arg0);
 		case GLOB_ABORTED:
 		case GLOB_NOMATCH:
 			break;
 		default:
+			IN_CODE_DEBUG("Return %d", IN_ST_INTERNAL);
 			return warning(context, IN_ST_INTERNAL, "%s: unknown glob(3) error %d", arg0, gret);
 		}
 	}
@@ -264,20 +270,35 @@ static in_status_t kw_main_include(context_t *context, keyword_t *keyword, char 
 		}
 		IN_PROTECT_ERRNO(globfree(&gval));
 	}
+	IN_CODE_DEBUG("Return %d", (int)status);
 	return status;
 }
 
 static in_status_t kw_main_settings(context_t *context, keyword_t *keyword, char *arg0, char *args)
 {
 	char *rem;
+#if defined(DEBUG)
+	in_status_t retval;
+#endif
 
-	CC_LOG_DBGCOD("Entering kw_main_settings(%p, %p, %s, %s)", context, keyword, arg0, args);
+	IN_CODE_DEBUG("Entering(%p, %p, %s, %s)", context, keyword, arg0, args);
 
 	if(args && NULL != strtok_r(args, ifs, &rem))
+	{
+		IN_CODE_DEBUG("Return IN_ST_SYNTAX_ERROR");
 		return malformed(context, arg0);
+	}
 	if(UNICITY_SETTINGS == (unicity & UNICITY_SETTINGS))
+	{
+		IN_CODE_DEBUG("Return IN_ST_SYNTAX_ERROR");
 		return error(context, IN_ST_SYNTAX_ERROR, "%s: duplicate directive", keyword->kw_name);
+	}
+#if defined(DEBUG)
+	retval = subprocess_lines(context, kw_sett);
+	IN_CODE_DEBUG("Return %d", retval);
+#else
 	return subprocess_lines(context, kw_sett);
+#endif
 }
 /*
  * directory definition keywords
@@ -293,7 +314,7 @@ static in_status_t kw_dire_event(context_t *context, keyword_t *keyword, char *a
 	in_directory_t *dir;
 	in_action_t    *act;
 
-	CC_LOG_DBGCOD("Entering kw_dire_event(%p, %p, %s, %s)", context, keyword, arg0, args);
+	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	dir = (in_directory_t *)context->ct_data;
 	evs = strtok_r(args, ifs, &rem);
 	if(NULL == evs || '\0' == *evs || NULL == rem || '\0' == *rem)
@@ -303,7 +324,7 @@ static in_status_t kw_dire_event(context_t *context, keyword_t *keyword, char *a
 	if(0 != (msk & dir->dir_mask))
 	{
 		char evtstr[128];
-		CC_LOG_DBGCOD("msk = %X, dir msk = %X", msk, dir->dir_mask);
+		IN_CODE_DEBUG("msk = %X, dir msk = %X", msk, dir->dir_mask);
 		in_events2str(evtstr, sizeof(evtstr), msk & dir->dir_mask);
 		return error(context, IN_ST_VALUE_ERROR, "Duplicate events : `%s'", evtstr);
 	}
@@ -346,7 +367,7 @@ static in_status_t kw_dire_group(context_t *context, keyword_t *keyword, char *a
 	long            value;
 	in_directory_t *dire;
 
-	CC_LOG_DBGCOD("Entering kw_dire_group(%p, %p, %s, %s)", context, keyword, arg0, args);
+	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	if(0 == (argc = split(&args, argv, 1, 1)))
 		return malformed(context, arg0);
 	dire = (in_directory_t *)context->ct_data;
@@ -374,7 +395,7 @@ static in_status_t kw_dire_shell(context_t *context, keyword_t *keyword, char *a
 	char           *shell;
 	in_directory_t *dire;
 
-	CC_LOG_DBGCOD("Entering kw_dire_shell(%p, %p, %s, %s)", context, keyword, arg0, args);
+	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	if(0 == (argc = split(&args, argv, 1, 1)))
 		return malformed(context, arg0);
 	dire = (in_directory_t *)context->ct_data;
@@ -393,7 +414,7 @@ static in_status_t kw_dire_user(context_t *context, keyword_t *keyword, char *ar
 	long            value;
 	in_directory_t *dire;
 
-	CC_LOG_DBGCOD("Entering kw_dire_user(%p, %p, %s, %s)", context, keyword, arg0, args);
+	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	if(0 == (argc = split(&args, argv, 1, 1)))
 		return malformed(context, arg0);
 	dire = (in_directory_t *)context->ct_data;
@@ -418,15 +439,15 @@ static in_status_t kw_logg_level(context_t *context, keyword_t *keyword, char *a
 {
 	char            *argv[1];
 	size_t           argc;
-	cc_log_level_t   llev;
+	in_log_level_t   llev;
 
-	CC_LOG_DBGCOD("Entering kw_logg_level(%p, %p, %s, %s)", context, keyword, arg0, args);
+	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	if(0 == (argc = split(&args, argv, 1, 1)))
 		return malformed(context, arg0);
-	if((cc_log_level_t )-1 == (llev = cc_log_level_by_name(*argv)))
+	if((in_log_level_t )-1 == (llev = in_log_level_by_name(*argv)))
 		return error(context, IN_ST_VALUE_ERROR, "%s: bad level name `%s'", arg0, *argv);
 	if(0 == (cliopts & CL_OPT_LOGLVL))
-		cc_log_set_level(llev);
+		in_log_set_level(llev);
 	return IN_ST_OK;
 }
 
@@ -436,23 +457,23 @@ static in_status_t kw_logg_set(context_t *context, keyword_t *keyword, char *arg
 	char            *argv[2];
 	size_t           argc;
 
-	CC_LOG_DBGCOD("Entering kw_logg_set(%p, %p, %s, %s)", context, keyword, arg0, args);
+	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	if(0 == (argc = split(&args, argv, 2, 1)))
 		return malformed(context, arg0);
 	ldrv = (char *)context->ct_data;
-	switch(cc_log_tst_drv_opt(ldrv, argv[0], argv[1]))
+	switch(in_log_tst_drv_opt(ldrv, argv[0], argv[1]))
 	{
-	case CC_LOG_BADOPTION:
+	case IN_LOG_BADOPTION:
 		return error(context, IN_ST_NOT_FOUND, "%s: Log driver `%s' does not have `%s' as option", arg0, ldrv, argv[0]);
-	case CC_LOG_BADOPTVAL:
+	case IN_LOG_BADOPTVAL:
 		return error(context, IN_ST_VALUE_ERROR, "%s: Log driver `%s', option `%s', bad value `%s'", arg0, ldrv, argv[0], argv[1]);
-	case CC_LOG_BADDRIVER:
+	case IN_LOG_BADDRIVER:
 		return error(context, IN_ST_INTERNAL, "%s: Unknown log driver `%s'", arg0, ldrv);
 	default:
 		break;
 	}
 	if(0 == (cliopts & CL_OPT_LOGOPT))
-		(void)cc_log_set_drv_opt(ldrv, argv[0], argv[1]);
+		(void)in_log_set_drv_opt(ldrv, argv[0], argv[1]);
 	return IN_ST_OK;
 }
 
@@ -465,17 +486,17 @@ static in_status_t kw_sett_logging(context_t *context, keyword_t *keyword, char 
 	char        *driver;
 	char        *rest;
 
-	CC_LOG_DBGCOD("Entering kw_sett_logging(%p, %p, %s, %s)", context, keyword, arg0, args);
+	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	driver = strtok_r(args, ifs, &rest);
 	if(NULL == driver || '\0' == *driver || (NULL != rest && '\0' != *rest))
 		return malformed(context, arg0);
-	if(CC_LOG_BADDRIVER == cc_log_driver_exists(driver))
+	if(IN_LOG_BADDRIVER == in_log_driver_exists(driver))
 		return error(context, IN_ST_VALUE_ERROR, "Logging driver '%s' does not exists", driver);
 	context->ct_data = (void *)driver;
 	if(IN_ST_OK == (status = subprocess_lines(context, kw_logg)))
 	{
 		if(0 == (cliopts & CL_OPT_LOGDRV))
-			(void)cc_log_set_driver(driver);
+			(void)in_log_set_driver(driver);
 	}
 	context->ct_data = NULL;
 	return status;
@@ -486,12 +507,12 @@ static in_status_t kw_sett_pidfile(context_t *context, keyword_t *keyword, char 
 	size_t          argc;
 	char           *argv[1];
 
-	CC_LOG_DBGCOD("Entering kw_sett_pidfile(%p, %p, %s, %s)", context, keyword, arg0, args);
+	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	if(0 == (argc = split(&args, argv, 1, 1)))
 		return malformed(context, arg0);
-	if(-1 == cc_ctl_pidfile(*argv))
+	if(-1 == in_ctl_pidfile(*argv))
 		return error(context, IN_ST_VALUE_ERROR, "%s: bad pidfile definition '%s'", arg0, *argv);
-	if((0 == (cliopts & CL_OPT_PIDFILE)) && (-1 == cc_set_pidfile(*argv)))
+	if((0 == (cliopts & CL_OPT_PIDFILE)) && (-1 == in_set_pidfile(*argv)))
 		return error(context, IN_ST_VALUE_ERROR, "%s: bad pidfile definition '%s'", arg0, *argv);
 	
 	return IN_ST_OK;
@@ -650,19 +671,19 @@ static in_status_t read_from_file(const char *filename)
 	in_status_t  status;
 	struct stat  finfo;
 
-	CC_LOG_DBGCOD("Entering read_from_file(%s)\n", filename);
+	IN_CODE_DEBUG("Entering (%s)\n", filename);
 
 	status = IN_ST_SYSTEM_ERROR;
 
 	if(-1 == stat(filename, &finfo))
 	{
-		IN_PROTECT_ERRNO(cc_log_perror(filename));
+		IN_PROTECT_ERRNO(in_log_perror(filename));
 		return status;
 	}
 
 	if(-1 == (filedesc = open(filename, O_RDONLY)))
 	{
-		IN_PROTECT_ERRNO(cc_log_perror(filename));
+		IN_PROTECT_ERRNO(in_log_perror(filename));
 		return IN_ST_SYSTEM_ERROR;
 	}
 
@@ -681,7 +702,7 @@ static in_status_t read_from_file(const char *filename)
 
 in_status_t in_configuration_read(const char *filename, unsigned int optmask)
 {
-	CC_LOG_DBGCOD("Entering in_configuration_read(%s)\n", filename);
+	IN_CODE_DEBUG("Entering (%s)\n", filename);
 
 	unicity = 0;
 	cliopts = optmask;

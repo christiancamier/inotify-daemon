@@ -1,9 +1,48 @@
+/* 
+ * Copyright: Christian CAMIER & Quentin PERIDON 2022
+ * 
+ * christian.c@promethee.services
+ * 
+ * This software is a computer program whose purpose is to manage filesystems
+ * events on defined directories.
+ * 
+ * This software is governed by the CeCILL-B license under French law and
+ * abiding by the rules of distribution of free software.  You can  use, 
+ * modify and/ or redistribute the software under the terms of the CeCILL-B
+ * license as circulated by CEA, CNRS and INRIA at the following URL
+ * "http://www.cecill.info". 
+ * 
+ * As a counterpart to the access to the source code and  rights to copy,
+ * modify and redistribute granted by the license, users are provided only
+ * with a limited warranty  and the software's author,  the holder of the
+ * economic rights,  and the successive licensors  have only  limited
+ * liability. 
+ * 
+ * In this respect, the user's attention is drawn to the risks associated
+ * with loading,  using,  modifying and/or developing or reproducing the
+ * software by the user in light of its specific status of free software,
+ * that may mean  that it is complicated to manipulate,  and  that  also
+ * therefore means  that it is reserved for developers  and  experienced
+ * professionals having in-depth computer knowledge. Users are therefore
+ * encouraged to load and test the software's suitability as regards their
+ * requirements in conditions enabling the security of their systems and/or 
+ * data to be ensured and,  more generally, to use and operate it in the 
+ * same conditions as regards security. 
+ * 
+ * The fact that you are presently reading this means that you have had
+ * knowledge of the CeCILL-B license and that you accept its terms.
+ */
+
+#include "ind_config.h"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <errno.h>
+
+#include "inotify-daemon.h"
 
 extern void            in_log_add_option(const char *, int(*)(const char *, const char *, void *, int), void *);
 extern int             in_log_driver_exists(const char *);
@@ -16,6 +55,9 @@ extern int             in_log_set_driver   (const char *);
 extern int             in_log_set_option   (const char *, const char *);
 extern int             in_log_set_drv_opt  (const char *, const char *, const char *);
 extern const char     *in_log_timestamp    (void);
+
+extern int             in_log_tst_option   (const char *, const char *);
+extern int             in_log_tst_drv_opt  (const char *, const char *, const char *);
 
 extern void            in_log_alert        (const char *, ...);
 extern void            in_log_crit         (const char *, ...);
@@ -32,6 +74,9 @@ extern void            in_log_dbgcod       (const char *, size_t, const char *, 
 extern void            in_log_panic          (const char *, ...) __attribute__((noreturn));
 extern void            in_log_perror	     (const char *);
 
+#if defined(DEBUG)
+extern void in_log_code_debug(const char *, size_t, const char *, const char *, ...);
+#endif
 static struct in_logger_st *find_driver(const char *);
 
 static int  dfl_sop(const char *, const char *, int);
@@ -410,14 +455,33 @@ static void dfl_log(in_log_level_t level, const char *format, va_list ap)
 	char        *bufpos = buffer;
 	size_t       bufsiz = sizeof(buffer);
 	// fprintf(stderr, "**** %p %p %p\n", dfl_channel, stdout, stderr);
-	(void)in_fmt_timestamp(&bufpos, &bufsiz, tistmp);
-	(void)in_fmt_string   (&bufpos, &bufsiz, " - [");
-	(void)in_fmt_string   (&bufpos, &bufsiz, in_log_level_name(level));
-	(void)in_fmt_string   (&bufpos, &bufsiz, "] - ");
+	in_fmt_timestamp(&bufpos, &bufsiz, tistmp);
+	in_fmt_string   (&bufpos, &bufsiz, " - [");
+	in_fmt_string   (&bufpos, &bufsiz, in_log_level_name(level));
+	in_fmt_string   (&bufpos, &bufsiz, "] - ");
 	(void)vsnprintf(bufpos, bufsiz, format, ap);
 	fprintf(dfl_channel, "%s\n", buffer);
 	return;
 }
+
+#if defined(DEBUG)
+void in_log_code_debug(const char *src_file, size_t src_line, const char *func_name, const char *format, ...)
+{
+	char buffer[1024];
+	va_list     ap;
+
+	if(IN_LOG_DEBUG <= curlev)
+	{
+		buffer[sizeof(buffer) - 1] = '\0';
+		va_start(ap, format);
+		(void)vsnprintf(buffer, sizeof(buffer) - 1, format, ap);
+		va_end(ap);
+		in_log_debug("%s[%lu] - %s - %s", src_file, src_line, func_name, buffer);
+	}
+	
+	return;
+}
+#endif
 
 static __attribute__((constructor)) void ctor_default(void)
 {

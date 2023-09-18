@@ -44,8 +44,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <CCR/cc_log.h>
-
 #include "inotify-daemon.h"
 
 extern in_status_t in_directory_create    (const char *, in_directory_t **);
@@ -63,23 +61,32 @@ static in_status_t getbyname(const char *pathname, in_directory_t **retd, struct
 	in_directory_t *pt;
 	struct stat     di[1];
 
-	CC_LOG_DBGCOD("Entering getbyname(%s, %p, %p)", pathname, retd, rets);
+	IN_CODE_DEBUG("Entering (%s, %p, %p)", pathname, retd, rets);
 	if(-1 == stat(pathname, di))
+	{
+		IN_CODE_DEBUG("Return IN_ST_SYSTEM_ERROR");
 		return IN_ST_SYSTEM_ERROR;
+	}
 
 	if(rets)
 		(void)memcpy(rets, di, sizeof(di));
 
 	if((di->st_mode & S_IFMT) != S_IFDIR)
+	{
+		IN_CODE_DEBUG("Return IN_ST_NOT_DIRECTORY");
 		return IN_ST_NOT_DIRECTORY;
+	}
 	for(pt = dir_first; pt != NULL; pt = pt->dir_next)
 	{
 		if((pt->dir_dev == di->st_dev) && (pt->dir_ino == di->st_ino))
 		{
-			if(retd) *retd = pt;
+			if(retd)
+				*retd = pt;
+			IN_CODE_DEBUG("Return IN_ST_OK");
 			return IN_ST_OK;
 		}
 	}
+	IN_CODE_DEBUG("Return IN_ST_NOT_FOUND");
 	return IN_ST_NOT_FOUND;
 }
 
@@ -90,7 +97,7 @@ in_status_t in_directory_create(const char *pathname, in_directory_t **retv)
 	in_directory_t *newdir;
 	char           *dname;
 
-	CC_LOG_DBGCOD("Entering in_directory_create(%s, %p)", pathname, retv);
+	IN_CODE_DEBUG("Entering (%s, %p)", pathname, retv);
 	switch(status = getbyname(pathname, NULL, dinfo))
 	{
 	case IN_ST_NOT_FOUND:
@@ -102,9 +109,17 @@ in_status_t in_directory_create(const char *pathname, in_directory_t **retv)
 	}
 	
 	if(NULL == (newdir = (in_directory_t *)malloc(sizeof(in_directory_t))))
+	{
+		in_log_crit("Cannot allocate %lu bytes", sizeof(in_directory_t));
+		IN_CODE_DEBUG("Return IN_ST_SYSTEM_ERROR");
 		return IN_ST_SYSTEM_ERROR;
+	}
 	if(NULL == (dname = strdup(pathname)))
+	{
+		in_log_crit("Cannot duplicate string %s", pathname);
+		IN_CODE_DEBUG("Return IN_ST_SYSTEM_ERROR");
 		return IN_ST_SYSTEM_ERROR;
+	}
 
 	(void)memset(newdir, 0, sizeof(in_directory_t));
 	newdir->dir_name     = dname;
@@ -121,29 +136,35 @@ in_status_t in_directory_create(const char *pathname, in_directory_t **retv)
 
 	*retv = newdir;
 
+	IN_CODE_DEBUG("Return IN_ST_OK");
 	return IN_ST_OK;
 }
 
 in_status_t in_directory_getbyname(const char *pathname, in_directory_t **retv)
 {
-	CC_LOG_DBGCOD("Entering in_directory_getbyname(%s, %p)", pathname, retv);
-	return getbyname(pathname, retv, NULL);
+	in_status_t rsta;
+	IN_CODE_DEBUG("Entering (%s, %p)", pathname, retv);
+	rsta = getbyname(pathname, retv, NULL);
+	IN_CODE_DEBUG("Return %d", rsta);
+	return rsta;
 }
 
 in_status_t in_directory_getbywatch(int wd, in_directory_t **retd)
 {
 	in_directory_t *ptr;
 
-	CC_LOG_DBGCOD("Entering in_directory_getbywatch(%d, %p)", wd, retd);
+	IN_CODE_DEBUG("Entering (%d, %p)", wd, retd);
 	for(ptr = dir_first; ptr; ptr = ptr->dir_next)
 	{
 		if(wd == ptr->dir_wd)
 		{
 			if(retd)
 				*retd = ptr;
+			IN_CODE_DEBUG("Return IN_ST_OK");
 			return IN_ST_OK;
 		}
 	}
+	IN_CODE_DEBUG("Return IN_ST_NOT_FOUND");
 	return IN_ST_NOT_FOUND;
 }
 
@@ -151,12 +172,16 @@ void in_directory_foreach(int (*callback)(in_directory_t *, void *), void *data)
 {
 	in_directory_t *ptr;
 
-	CC_LOG_DBGCOD("Entering in_directory_foreach(%p, %p)", callback, data);
+	IN_CODE_DEBUG("Entering (%p, %p)", callback, data);
 	for(ptr = dir_first; ptr; ptr = ptr->dir_next)
 	{
-		if(!callback(ptr, data))
+		if(0 == callback(ptr, data))
+		{
+			IN_CODE_DEBUG("Callback returned 0 ... Stopping iterrations");
 			break;
+		}
 	}
+	IN_CODE_DEBUG("Return");
 	return;
 }
 
@@ -165,23 +190,25 @@ void in_directory_purge(void)
 	in_directory_t *cptr;
 	in_directory_t *nptr;
 
-	CC_LOG_DBGCOD("Entering in_directory_purge()");
-	if(NULL == dir_first)
-		return;
+	IN_CODE_DEBUG("Entering ()");
 
-	for(cptr = dir_first, nptr = cptr->dir_next; cptr; cptr = nptr)
+	if(NULL != dir_first)
 	{
-		size_t       n;
-		in_action_t *p = cptr->dir_actions + IN_ARRAY_COUNT(cptr->dir_actions);
-		for(p -= 1, n = 0; n < IN_ARRAY_COUNT(cptr->dir_actions); n += 1, p -= 1)
+		for(cptr = dir_first, nptr = cptr->dir_next; cptr; cptr = nptr)
 		{
-			if(p->act_command) free((void *)p->act_command);
+			size_t       n;
+			in_action_t *p = cptr->dir_actions + IN_ARRAY_COUNT(cptr->dir_actions);
+			for(p -= 1, n = 0; n < IN_ARRAY_COUNT(cptr->dir_actions); n += 1, p -= 1)
+			{
+				if(p->act_command) free((void *)p->act_command);
+			}
+			if(cptr->dir_shell)	free((void *)cptr->dir_shell);
+			if(cptr->dir_name)	free((void *)cptr->dir_name);
+			nptr = cptr->dir_next;
+			free(cptr);
 		}
-		if(cptr->dir_shell)	free((void *)cptr->dir_shell);
-		if(cptr->dir_name)	free((void *)cptr->dir_name);
-		nptr = cptr->dir_next;
-		free(cptr);
+		dir_first = NULL;
 	}
-	dir_first = NULL;
+	IN_CODE_DEBUG("Return");
 	return;
 }

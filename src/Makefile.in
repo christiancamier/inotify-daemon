@@ -89,13 +89,6 @@ distclean: clean
 	rm -f  Makefile
 	rm -f  ind_config.h config.log config.status
 
-install.sbin: $(SBINS)
-	mkdir -m 755 -p $(sbindir)
-	for EXE in $(SBINS);		\
-	do				\
-	  $(INSTALL_SBIN) $$EXE;	\
-	done
-
 inotify-daemon: $(COBJS)
 	$(CC) $(LDOPTS) -o $@ $(COBJS)
 
@@ -104,13 +97,18 @@ ind_conf.o:		ind_conf.c		inotify-daemon.h ind_tunables.h ind_config.h
 ind_dire.o:		ind_dire.c		inotify-daemon.h ind_tunables.h ind_config.h
 ind_engi.o:		ind_engi.c		inotify-daemon.h ind_tunables.h ind_config.h
 ind_erro.o:		ind_erro.c		inotify-daemon.h ind_tunables.h ind_config.h
-ind_form.o:		inf_form.c		inotify-daemon.h ind_tunables.h ind_config.h
+ind_form.o:		ind_form.c		inotify-daemon.h ind_tunables.h ind_config.h
 ind_inot.o:		ind_inot.c		inotify-daemon.h ind_tunables.h ind_config.h
 ind_logg.c:		ind_logg.c		inotify-daemon.h ind_tunables.h ind_config.h
 ind_logg_file.o:	ind_logg_file.c		inotify-daemon.h ind_tunables.h ind_config.h
 ind_logg_syslog.o:	ind_logg_syslog.c	inotify-daemon.h ind_tunables.h ind_config.h
+ind_main.o:		ind_main.c		inotify-daemon.h ind_tunables.h ind_config.h ind_opts.h
+ind_misc.o:		ind_main.c		inotify-daemon.h ind_tunables.h ind_config.h
+ind_nopt.o:		ind_nopt.c		inotify-daemon.h ind_tunables.h ind_config.h
+ind_opts.o:		ind_opts.c		inotify-daemon.h ind_tunables.h ind_config.h ind_opts.h
+ind_path.o:		ind_path.c		inotify-daemon.h ind_tunables.h ind_config.h
+ind_pidf.o:		ind_pidf.c		inotify-daemon.h ind_tunables.h ind_config.h
 ind_sign.o:		ind_sign.c		inotify-daemon.h ind_tunables.h ind_config.h
-ind_main.o:		ind_main.c		inotify-daemon.h ind_tunables.h ind_config.h
 
 inotify-daemon.conf: inotify-daemon.conf.source Makefile
 	python3 $(TOPDIR)/util/source2any.py -M ../Makefile.inc $<

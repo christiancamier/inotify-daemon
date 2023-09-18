@@ -6,8 +6,11 @@ function ind_execute() {
     exit 1
 }
 
-ind_execute wget -O config.sub   'https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD'
-ind_execute wget -O config.guess 'https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD'
+echo "Retrieving config.guess"
+ind_execute wget -q -O config.guess 'https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD'
+echo "Retrieving config.sub"
+ind_execute wget -q -O config.sub   'https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD'
+echo "Running ./configure $@"
 ind_execute ./configure "$@"
 exit 0
 

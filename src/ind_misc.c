@@ -35,96 +35,25 @@
 
 #include "ind_config.h"
 
-#include <sys/types.h>
-#include <errno.h>
-#include <poll.h>
 #include <stdlib.h>
+#include <strings.h>
 
 #include "inotify-daemon.h"
 
-extern void in_engine(void);
+extern int in_str2bool(const char *, int, int, int);
 
-__attribute__((noreturn)) void in_engine(void)
+static const char *Tvals[] = { "on",  "true",  "yes", NULL };
+static const char *Fvals[] = { "off", "false", "no",  NULL };
+
+int in_str2bool(const char *string, int tval, int fval, int other)
 {
-	int                  evtfd;
-	int                  sigfd;
-	int                  poret;
-
-	const char          *pidfile = in_get_pidfile();
-
-	IN_CODE_DEBUG("Entering ()");
-
-	do {
-		pid_t pidret = in_pidfile(pidfile, 1);
-
-		IN_CODE_DEBUG("%s", pidfile);
-
-		if((pid_t)-1 == pidret)
-		{
-			in_log_error("Problem with pidfile %s", pidfile);
-			exit(1);
-		}
-
-		if((pid_t) 0 != pidret)
-		{
-			in_log_error("Another similar engine is running with pid = %d", (int)pidret);
-			exit(1);
-		}
-	} while(0);
-	
-	if(-1 == (evtfd = in_events_init())) goto end;
-	if(-1 == (sigfd = in_signal_init())) goto end;
-
-	while(1)
-	{
-		nfds_t nfds = (nfds_t)in_cmd_count(NULL) + 2;
-		do {
-			struct pollfd polfds[nfds];
-
-			polfds[0].fd      = evtfd;	polfds[1].fd      = sigfd;
-			polfds[0].events  = POLLIN;	polfds[1].events  = POLLIN;
-			polfds[0].revents = 0;		polfds[1].revents = 0;
-
-			(void)in_cmd_count(polfds + 2);
-
-			poret = poll(polfds, nfds, -1);
-			in_log_debug("in_engine/poll returns %d", poret);
-
-			switch(poret)
-			{
-			case -1:
-				if(EINTR != errno)
-				{
-					in_log_perror("in_engine/poll");
-					goto end;
-				}
-			case  0:	/* Intentionaly fall into */
-				continue;
-			default:
-				break;
-			}
-			
-			if(POLLIN == (polfds[0].revents & POLLIN))
-			{
-				in_log_debug("New event(s)");
-				in_events_process();
-				continue;
-			}
-
-			if(0 < in_cmd_log(polfds + 2, (size_t)(nfds - 2)))
-				continue;
-
-			if(POLLIN == (polfds[1].revents & POLLIN))
-			{
-				in_log_debug("New signal(s)");
-				in_signal_process();
-			}
-		} while(0);
-	}
-
-end:
-	in_signal_terminate();
-	in_events_terminate();
-	IN_CODE_DEBUG("Exiting in_engine()");
-	exit(1);
+	const char **p;
+	for(p = Tvals; *p; p += 1)
+		if(0 == strcasecmp(string, *p))
+			return tval;
+	for(p = Fvals; *p; p += 1)
+		if(0 == strcasecmp(string, *p))
+			return fval;
+	return other;
 }
+

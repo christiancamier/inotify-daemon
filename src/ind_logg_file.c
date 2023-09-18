@@ -45,9 +45,7 @@
 #include <strings.h>
 #include <stdio.h>
 
-#include <CCR/cc_fmt.h>
-#include <CCR/cc_log.h>
-#include <CCR/cc_str2bool.h>
+#include "inotify-daemon.h"
 
 static int  file_sopt (const char *, const char *, int);
 static void file_open (void);
@@ -76,11 +74,11 @@ static int file_sopt (const char *option, const char *value, int simu)
 		{
 			char   *fpt = filename;
 			size_t  fsz = sizeof(filename) - 1;
-			(void)cc_fmt_string(&fpt, &fsz, value);
+			in_fmt_string(&fpt, &fsz, value);
 			*fpt = '\0';
 			(void)strcpy(filelast, filename);
 		}
-		return CC_LOG_OK;
+		return IN_LOG_OK;
 	}
 
 	if(0 == strcasecmp("mode", option))
@@ -90,14 +88,14 @@ static int file_sopt (const char *option, const char *value, int simu)
 
 		nmod = strtol(value, &eptr, 8);
 		if((eptr && *eptr) || (nmod < 0) || (nmod > 0777))
-			return CC_LOG_BADOPTVAL;
+			return IN_LOG_BADOPTVAL;
 		if(!simu)
 			filemode = nmod;
-		return CC_LOG_OK;
+		return IN_LOG_OK;
 	}
 
-	if(-1 == (onoff = cc_str2bool(value, 1, 0, -1)))
-		return CC_LOG_BADOPTVAL;
+	if(-1 == (onoff = in_str2bool(value, 1, 0, -1)))
+		return IN_LOG_BADOPTVAL;
 
 	if(0 == strcasecmp(option, "timestamped"))
 	{
@@ -106,7 +104,7 @@ static int file_sopt (const char *option, const char *value, int simu)
 			if(onoff) fileopts |=  FOPT_TIMESTAMPED;
 			else      fileopts &= ~FOPT_TIMESTAMPED;
 		}
-		return CC_LOG_OK;
+		return IN_LOG_OK;
 	}
 
 	if(0 == strcasecmp(option, "stayopen"))
@@ -116,10 +114,10 @@ static int file_sopt (const char *option, const char *value, int simu)
 			if(onoff) fileopts |=  FOPT_STAYOPEN;
 			else      fileopts &= ~FOPT_STAYOPEN;
 		}
-		return CC_LOG_OK;
+		return IN_LOG_OK;
 	}
 
-	return CC_LOG_BADOPTION;
+	return IN_LOG_BADOPTION;
 }
 
 static void file_open (void)
@@ -152,10 +150,10 @@ static void file_log  (int level, const char *format, va_list ap)
 		bufpos = buffer;
 		bufsiz = sizeof(buffer);
 	
-		(void)cc_fmt_timestamp(&bufpos, &bufsiz, cc_log_timestamp());
-		(void)cc_fmt_string   (&bufpos, &bufsiz, " - [");
-		(void)cc_fmt_string   (&bufpos, &bufsiz, cc_log_level_name(level));
-		(void)cc_fmt_string   (&bufpos, &bufsiz, "] - ");
+		in_fmt_timestamp(&bufpos, &bufsiz, in_log_timestamp());
+		in_fmt_string   (&bufpos, &bufsiz, " - [");
+		in_fmt_string   (&bufpos, &bufsiz, in_log_level_name(level));
+		in_fmt_string   (&bufpos, &bufsiz, "] - ");
 		(void)vsnprintf(bufpos, bufsiz, format, ap);
 		(void)fprintf(filedesc, "%s\n", buffer);
 	}
@@ -174,7 +172,7 @@ static void do_open(void)
 		size_t       fnsiz;
 		fnsiz = sizeof(newfilename) - 1;
 		fnptr = newfilename;
-		cc_fmt_timestamp(&fnptr, &fnsiz, filename);
+		in_fmt_timestamp(&fnptr, &fnsiz, filename);
 		*fnptr = '\0';
 		if(0 != strcmp(newfilename, filelast))
 		{
@@ -206,7 +204,7 @@ static void do_close(void)
 	return;
 }
 
-CC_LOG_REGISTER(
+IN_LOG_REGISTER(
 	file,
 	"file logging driver",
 	file_sopt,

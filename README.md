@@ -25,3 +25,7 @@ To compile inotify-daemon, the following packages are required:
 
 However, if you want to build the documentation in "info" and "pdf" formats,
 you need to install the "texinfo" and "texlive-full" packages.
+
+### Compilation
+Use ./ind_config.sh [options] instead ./configure [options]
+

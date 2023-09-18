@@ -132,6 +132,8 @@ extern void            in_log_register       (struct in_logger_st *);
 #define IN_LOG_REGISTER(aname, adesc, asopt, aopen, aclose, alog)	\
 	static struct in_logger_st drv_##aname = { .next = NULL, .name = #aname, .desc = adesc, .sopt = asopt, .open = aopen, .close = aclose, .log = alog }; \
 	static __attribute__((constructor)) void ctor_##aname(void) { in_log_register(&drv_##aname); }
+#else
+struct in_logger_st;
 #endif	
 
 /*
@@ -164,49 +166,118 @@ extern void            in_log_register       (struct in_logger_st *);
 #define CL_OPT_LOGOPT	(1 << 3)
 #define CL_OPT_ALL	(CL_OPT_PIDFILE | CL_OPT_LOGDRV | CL_OPT_LOGLVL | CL_OPT_LOGOPT)
 
-/* ind_command.c */
+/* ind_comm.c */
 extern size_t      in_cmd_count (struct pollfd *);
 extern void        in_cmd_exited(pid_t);
 extern int         in_cmd_log   (struct pollfd *, size_t);
 extern in_status_t in_cmd_run   (struct in_event_st *);
 
-/* ind_directory.c */
+/* ind_conf.c */
+extern in_status_t in_configuration_read(const char *, unsigned int);
+
+/* ind_dire.c */
 extern in_status_t in_directory_create    (const char *, in_directory_t **);
 extern in_status_t in_directory_getbyname (const char *, in_directory_t **);
 extern in_status_t in_directory_getbywatch(int,          in_directory_t **);
 extern void        in_directory_foreach   (int (*)(in_directory_t *, void *), void *);
 extern void        in_directory_purge     (void);
 
-/* ind_engine.c */
+/* ind_engi.c */
 extern void in_engine(void) __attribute__((noreturn));
 
-/* ind_error.c */
+/* ind_erro.c */
 extern const char *in_strerror(in_status_t);
 
-/* ind_configuration.c */
-extern in_status_t in_configuration_read(const char *, unsigned int);
+/* ind_forl.c */
+extern  pid_t in_forcefork(size_t);
 
-/* ind_inotify.c */
+/* ind_form.c */
+extern void in_fmt_char  (char **, size_t *, char);
+extern void in_fmt_fmt   (char **, size_t *, const char *, ...);
+extern void in_fmt_string(char **, size_t *, const char *);
+#if defined(_STDARG_H) || defined(_ANSI_STDARG_H_) || defined(_VA_LIST_DECLARED)
+extern void in_fmt_vfmt  (char **, size_t *, const char *, va_list);
+#endif
+
+extern void    in_fmt_timestamp_setgmt(void);
+extern void    in_fmt_timestamp_setloc(void);
+extern ssize_t in_fmt_timestamp       (char **, size_t *, const char *);
+
+
+/* ind_inot.c */
 extern in_status_t in_str2events(char *, uint32_t *);
 extern void        in_events2str(char *, size_t, uint32_t);
 extern int         in_events_init(void);
 extern void        in_events_process(void);
 extern in_status_t in_events_terminate(void);
 
-/* ind_log.c */
+/* ind_logg.c */
+#define IN_LOG_OK         0
+#define IN_LOG_BADOPTION -1
+#define IN_LOG_BADOPTVAL -2
+#define IN_LOG_BADDRIVER -3
+
+extern void            in_log_add_option(const char *, int(*)(const char *, const char *, void *, int), void *);
+extern int             in_log_driver_exists(const char *);
+extern size_t          in_log_driver_list  (struct in_log_driver_info *, size_t);
+extern in_log_level_t  in_log_level_by_name(const char *);
+extern const char     *in_log_level_name   (in_log_level_t);
+extern void            in_log_register     (struct in_logger_st *);
+extern in_log_level_t  in_log_set_level    (in_log_level_t);
+extern int             in_log_set_driver   (const char *);
+extern int             in_log_set_option   (const char *, const char *);
+extern int             in_log_set_drv_opt  (const char *, const char *, const char *);
+extern const char     *in_log_timestamp    (void);
+
+extern int             in_log_tst_option   (const char *, const char *);
+extern int             in_log_tst_drv_opt  (const char *, const char *, const char *);
+
+extern void            in_log_alert        (const char *, ...);
+extern void            in_log_crit         (const char *, ...);
+extern void            in_log_debug        (const char *, ...);
+extern void            in_log_emerg        (const char *, ...);
+extern void            in_log_error        (const char *, ...);
+extern void            in_log_info         (const char *, ...);
+extern void            in_log_notice       (const char *, ...);
+extern void            in_log_warning      (const char *, ...);
+extern void            in_log_log          (in_log_level_t, const char *, ...);
+#if defined(_STDARG_H) || defined(_ANSI_STDARG_H_) || defined(_VA_LIST_DECLARED)
+extern void            in_log_vlog         (in_log_level_t, const char *, va_list);
+#endif
+extern void            in_log_dbgcod       (const char *, size_t, const char *, ...);
+
+extern void            in_log_panic          (const char *, ...) __attribute__((noreturn));
+extern void            in_log_perror	     (const char *);
+
 #if defined(DEBUG)
 extern void in_log_code_debug(const char *, size_t, const char *, const char *, ...);
 #define IN_CODE_DEBUG(...)	in_log_code_debug(__FILE__, __LINE__, __func__, __VA_ARGS__)
 #else
 #define IN_CODE_DEBUG(...)
 #endif
-/* ind_signal.c */
+
+/* ind_main.c */
+extern void in_reread_configuration(void);
+extern int  main(int, char **);
+
+/* misc.c */
+extern int in_str2bool(const char *, int, int, int);
+
+/* ind_nopt.c */
+extern char *in_next_option(char **, char *, size_t, const char *);
+
+/* ind_path.c */
+extern int    in_mkpath(const char *, int);
+
+/* ind_sign.c */
 extern int  in_signal_init(void);
 extern void in_signal_process(void);
 extern void in_signal_terminate(void);
 
-/* inotify_daemon.c */
-extern void in_reread_configuration(void);
-extern int  main(int, char **);
+/* ind_pidf.c */
+extern int          in_ctl_pidfile(const char *);
+extern const char  *in_get_pidfile(void);
+extern int          in_set_pidfile(const char *);
+extern pid_t        in_pidfile    (const char *, int);
 
 #endif /* !__INOTIFY_DAEMON_H__ */

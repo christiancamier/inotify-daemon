@@ -49,6 +49,8 @@ pid_t in_forcefork(size_t retries)
 	pid_t  child;
 	size_t retry;
 
+	IN_CODE_DEBUG("Entering (%lu)", retries);
+
 	for(retry = 0; retry < retries; retry += 1)
 	{
 		if(-1 != (child = fork()))
@@ -57,5 +59,6 @@ pid_t in_forcefork(size_t retries)
 		usleep(100000);	/* Sleep 100ms */
 		errno = sverr;
 	}
+	IN_CODE_DEBUG("pid = %d, Return %d", getpid(), child);
 	return child;
 }
