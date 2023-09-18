@@ -1,4 +1,13 @@
-/* config.h.in.  Generated from configure.ac by autoheader.  */
+/* src/ind_config.h.in.  Generated from configure.ac by autoheader.  */
+
+/* Undef for debugging */
+#undef DEBUG
+
+/* Define to 1 if you have the `atexit' function. */
+#undef HAVE_ATEXIT
+
+/* Define to 1 if you have the `dup2' function. */
+#undef HAVE_DUP2
 
 /* Define to 1 if you have the `endgrent' function. */
 #undef HAVE_ENDGRENT
@@ -12,6 +21,12 @@
 /* Define to 1 if you have the `fork' function. */
 #undef HAVE_FORK
 
+/* Define to 1 if you have the `inotify_add_watch' function. */
+#undef HAVE_INOTIFY_ADD_WATCH
+
+/* Define to 1 if you have the `inotify_init1' function. */
+#undef HAVE_INOTIFY_INIT1
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
@@ -22,17 +37,23 @@
    to 0 otherwise. */
 #undef HAVE_MALLOC
 
-/* Define to 1 if you have the <memory.h> header file. */
-#undef HAVE_MEMORY_H
-
 /* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
+
+/* Define to 1 if you have the `mkdir' function. */
+#undef HAVE_MKDIR
 
 /* Define to 1 if you have the <paths.h> header file. */
 #undef HAVE_PATHS_H
 
+/* Define to 1 if you have the `signalfd' function. */
+#undef HAVE_SIGNALFD
+
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
@@ -57,6 +78,18 @@
 
 /* Define to 1 if you have the `strtol' function. */
 #undef HAVE_STRTOL
+
+/* Define to 1 if you have the <syslog.h> header file. */
+#undef HAVE_SYSLOG_H
+
+/* Define to 1 if you have the <sys/inotify.h> header file. */
+#undef HAVE_SYS_INOTIFY_H
+
+/* Define to 1 if you have the <sys/param.h> header file. */
+#undef HAVE_SYS_PARAM_H
+
+/* Define to 1 if you have the <sys/signalfd.h> header file. */
+#undef HAVE_SYS_SIGNALFD_H
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
@@ -97,7 +130,9 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Define to 1 if you have the ANSI C header files. */
+/* Define to 1 if all of the C90 standard headers exist (not just the ones
+   required in a freestanding environment). This macro is provided for
+   backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
 
 /* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
@@ -108,10 +143,16 @@
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef gid_t
 
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
+#undef inline
+#endif
+
 /* Define to rpl_malloc if the replacement function should be used. */
 #undef malloc
 
-/* Define to `int' if <sys/types.h> does not define. */
+/* Define as a signed integer type capable of holding a process identifier. */
 #undef pid_t
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */

@@ -50,7 +50,7 @@ MACROS =				\
 MAKE    ?= make
 SUBMAKE  = $(MAKE) -f Makefile
 CC	?= LANG=C gcc
-CFLAGS	?= -g -Wall -Wunused-variable -Werror -I../libCCR/include $(MACROS)
+CFLAGS	?= -g -Wall -Wunused-variable -Werror $(MACROS)
 
 
 CSRCS	= $(shell echo *.c)
@@ -87,7 +87,7 @@ clean: Force
 
 distclean: clean
 	rm -f  Makefile
-	rm -f  config.h config.log config.status
+	rm -f  ind_config.h config.log config.status
 
 install.sbin: $(SBINS)
 	mkdir -m 755 -p $(sbindir)
@@ -97,18 +97,20 @@ install.sbin: $(SBINS)
 	done
 
 inotify-daemon: $(COBJS)
-	$(CC) $(LDOPTS) -o $@ $(COBJS) ../libCCR/lib/libCCR.a
+	$(CC) $(LDOPTS) -o $@ $(COBJS)
 
-ind_command.o:		ind_command.c		inotify-daemon.h ind_tunables.h
-ind_configuration.o:	ind_configuration.c	inotify-daemon.h ind_tunables.h
-ind_directory.o:	ind_directory.c		inotify-daemon.h
-ind_engine.o:		ind_engine.c		inotify-daemon.h
-ind_error.o:		ind_error.c		inotify-daemon.h
-ind_inotify.o:		ind_inotify.c		inotify-daemon.h
-ind_log_file.o:		ind_log_file.c		inotify-daemon.h
-ind_log_syslog.o:	ind_log_syslog.c	inotify-daemon.h
-ind_signal.o:		ind_signal.c		inotify-daemon.h
-inotify-daemon.o:	inotify-daemon.c	inotify-daemon.h ind_tunables.h
+ind_comm.o:		ind_comm.c		inotify-daemon.h ind_tunables.h ind_config.h
+ind_conf.o:		ind_conf.c		inotify-daemon.h ind_tunables.h ind_config.h
+ind_dire.o:		ind_dire.c		inotify-daemon.h ind_tunables.h ind_config.h
+ind_engi.o:		ind_engi.c		inotify-daemon.h ind_tunables.h ind_config.h
+ind_erro.o:		ind_erro.c		inotify-daemon.h ind_tunables.h ind_config.h
+ind_form.o:		inf_form.c		inotify-daemon.h ind_tunables.h ind_config.h
+ind_inot.o:		ind_inot.c		inotify-daemon.h ind_tunables.h ind_config.h
+ind_logg.c:		ind_logg.c		inotify-daemon.h ind_tunables.h ind_config.h
+ind_logg_file.o:	ind_logg_file.c		inotify-daemon.h ind_tunables.h ind_config.h
+ind_logg_syslog.o:	ind_logg_syslog.c	inotify-daemon.h ind_tunables.h ind_config.h
+ind_sign.o:		ind_sign.c		inotify-daemon.h ind_tunables.h ind_config.h
+ind_main.o:		ind_main.c		inotify-daemon.h ind_tunables.h ind_config.h
 
 inotify-daemon.conf: inotify-daemon.conf.source Makefile
 	python3 $(TOPDIR)/util/source2any.py -M ../Makefile.inc $<

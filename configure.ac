@@ -36,8 +36,10 @@
 
 AC_PREREQ([2.69])
 AC_INIT([inotify-daemon], [0.1], [christian.c@promethee.services])
-AC_CONFIG_SRCDIR([src/inotify-daemon.c])
+AC_CONFIG_SRCDIR([src/ind_main.c])
 AC_CONFIG_HEADERS([src/ind_config.h])
+
+AC_ARG_ENABLE([debug], [Insert full debugging traces], [AC_DEFINE([DEBUG], [], [Undef for debugging])])
 
 # AC_ARG_WITH([package], AS_HELP_STRING([--with-package], [Do not install, create package]))
 
@@ -89,15 +91,6 @@ esac
 
 AC_SUBST(pkgdir, $ccr_os_pkg_type)
 
-# Gets the libCCR needed for compilation
-if   test -d libCCR
-then :
-else
-  AC_MSG_NOTICE("Getting LibCCR")
-  git clone https://github.com/christiancamier/libCCR.git || AC_MSG_ERROR([Cannot retrieve libCCR from github])
-  chmod +x libCCR/configure                               || AC_MSG_ERROR([There is a problem with libCCR/configure])
-fi
-
 # Makefiles substitutions
 AC_SUBST(topdir, `pwd`)
 
@@ -129,5 +122,4 @@ AC_CONFIG_FILES([Makefile
 		 deb/Makefile
 		 rpm/Makefile])
 
-AC_CONFIG_SUBDIRS([libCCR])
 AC_OUTPUT

@@ -35,8 +35,7 @@
 
 include @topdir@/Makefile.inc
 
-SUBDIRS = libCCR	\
-	  src		\
+SUBDIRS = src		\
 	  doc		\
 	  @pkgdir@
 
@@ -87,9 +86,8 @@ _clean: Force
 
 _distclean: _clean
 	rm -fr Makefile Makefile.inc deb/Makefile rpm/Makefile
-	rm -fr config.log config.status
+	rm -fr config.log config.status config.guess config.sub
 	rm -fr autom4te.cache
-	rm -fr libCCR
 	rm -fr dist
 
 _install:
