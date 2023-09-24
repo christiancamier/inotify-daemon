@@ -54,7 +54,7 @@
 
 extern size_t      in_cmd_count (struct pollfd *);
 extern void        in_cmd_exited(pid_t);
-extern int         in_cmd_log   (struct pollfd *, size_t);
+extern void        in_cmd_log   (struct pollfd *, size_t);
 extern in_status_t in_cmd_run   (struct in_event_st *);
 
 static const uid_t nobody  = 65534;
@@ -107,7 +107,6 @@ static int cmd_alloc(pid_t pid, int pfdE, int pfdS)
 	}
 	else
 	{
-		IN_CODE_DEBUG("Taking in_cmd structure in freelist");
 		new          = cmd_freelist;
 		cmd_freelist = cmd_freelist->nxt;
 	}
@@ -231,7 +230,7 @@ static int execute_command(in_directory_t *dir, in_action_t *act, struct in_even
 	}
 	if(-1 == setreuid(dir->dir_uid, dir->dir_uid))
 	{
-		in_log_perror("Cannot change groups for command");
+		in_log_perror("Cannot change user id for command");
 		in_log_error("Exiting command");
 		exit(1);
 	}
@@ -240,7 +239,7 @@ static int execute_command(in_directory_t *dir, in_action_t *act, struct in_even
 	{
 		(void)close(2);
 		if(-1 == dup2(ofdE, 2))
-			in_log_perror("dup2 on stdout");
+			in_log_perror("dup2 on stderr");
 		(void)close(ofdE);
 	}
 	if(-1 != ofdS)
@@ -257,7 +256,7 @@ static int execute_command(in_directory_t *dir, in_action_t *act, struct in_even
 
 size_t in_cmd_count(struct pollfd *pfds)
 {
-	IN_CODE_DEBUG("Entering in_cmd_count(%p)", pfds);
+	IN_CODE_DEBUG("Entering (%p)", pfds);
 
 	if(NULL != pfds && NULL != cmd_runnings)
 	{
@@ -275,6 +274,8 @@ size_t in_cmd_count(struct pollfd *pfds)
 			cpfd += 1;
 		}
 	}
+
+	IN_CODE_DEBUG("Return %d", 2 * cmd_runcnt);
 	return 2 * cmd_runcnt;
 }
 
@@ -282,7 +283,7 @@ void in_cmd_exited(pid_t pid)
 {
 	struct in_cmd *cmd;
 
-	IN_CODE_DEBUG("Entering in_cmd_exited(%d)", pid);
+	IN_CODE_DEBUG("Entering (%d)", pid);
 	for(cmd = cmd_runnings; NULL != cmd; cmd = cmd->nxt)
 	{
 		if(pid == cmd->pid)
@@ -306,6 +307,7 @@ void in_cmd_exited(pid_t pid)
 			break;
 		}
 	}
+	IN_CODE_DEBUG("Return");
 	return;
 }
 
@@ -337,34 +339,34 @@ static void cmd_do_log(struct in_cmd *cmd, char *buf, int fd, in_log_level_t lvl
 	return;
 }
 
-int in_cmd_log(struct pollfd *pfds, size_t nfds)
+void in_cmd_log(struct pollfd *pfds, size_t nfds)
 {
 	struct pollfd *pfd;
 	struct in_cmd *cmd;
-	int            ret = 0;
+	int            stp = 0;
 
-	IN_CODE_DEBUG("Entering in_cmd_log(%p, %lu)", pfds, nfds);
+	IN_CODE_DEBUG("Entering (%p, %lu)", pfds, nfds);
 	for(pfd = pfds; nfds > 0; pfd += 1, nfds -= 1)
 	{
 		if(pfd->revents & POLLIN)
 		{
-			ret += 1;
-			for(cmd = cmd_runnings; NULL != cmd; cmd = cmd->nxt)
+			for(cmd = cmd_runnings; (0 == stp) && (NULL != cmd); cmd = cmd->nxt)
 			{
 				if(pfd->fd == cmd->pfdE)
 				{
 					cmd_do_log(cmd, cmd->bufE, pfd->fd, stderrlvl);
-					break;
+					stp = 1;
 				}
 				if(pfd->fd == cmd->pfdS)
 				{
 					cmd_do_log(cmd, cmd->bufS, pfd->fd, stdoutlvl);
-					break;
+					stp = 1;
 				}
 			}
 		}
 	}
-	return ret;
+	IN_CODE_DEBUG("Return");
+	return;
 }
 
 in_status_t in_cmd_run(struct in_event_st *event)
@@ -377,7 +379,7 @@ in_status_t in_cmd_run(struct in_event_st *event)
 	in_status_t      sta = IN_ST_OK;
 
 	IN_CODE_DEBUG(
-		"Entering in_cmd_run(%p [wd: %d mask: %04X cookie: %04X len: %u evtname: %s oldname: %s)",
+		"Entering (%p [wd: %d mask: %04X cookie: %04X len: %u evtname: %s oldname: %s])",
 		event, event->wd, event->mask, event->cookie, event->len, event->evtname, event->oldname
 		);
 	dir = event->dir;
@@ -427,6 +429,7 @@ in_status_t in_cmd_run(struct in_event_st *event)
 	in_log_error("Directory %s: event %X not defined", dir->dir_name, event->mask);
 	sta = IN_ST_INTERNAL;
 end:
+	IN_CODE_DEBUG("Return %d", sta);
 	return sta;
 }
 
@@ -437,17 +440,29 @@ static int log_setopt(const char *opt, const char *val, void *dat, int sim)
 
 	(void)dat;
 
+	IN_CODE_DEBUG("Entering (%s, Ms, %p, %d)", opt, val, dat, sim);
+
 	switch((long)dat)
 	{
-	case  1: lvlvar = &stdoutlvl; break;
-	case  2: lvlvar = &stderrlvl; break;
-	default: return IN_LOG_BADOPTION;
+	case  1:
+		lvlvar = &stdoutlvl;
+		break;
+	case  2:
+		lvlvar = &stderrlvl;
+		break;
+	default:
+		IN_CODE_DEBUG("Return IN_LOG_BADOPTION");
+		return IN_LOG_BADOPTION;
 	}
 	if((in_log_level_t)-1 == (newlevel = in_log_level_by_name(val)))
+	{
+		IN_CODE_DEBUG("Return IN_LOG_BADOPTVAL");
 		return IN_LOG_BADOPTVAL;
+	}
 
 	if(!sim)
 		*lvlvar = newlevel;
+	IN_CODE_DEBUG("Return IN_LOG_OK");
 	return IN_LOG_OK;
 }
 

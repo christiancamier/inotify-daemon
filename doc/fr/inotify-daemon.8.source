@@ -152,7 +152,10 @@ configuration.
 \fB\-S\fR, \fB\-\-stop\fR
 Demande au démon en cours d'exécution de s'arrêter
 .TP
-\fB\-T\fR, \fB\-\-test\fR
+\fB\-s\fR, \fB\-\-status\fR
+Test si le démon est en cours d'exécution.
+.TP
+\fB\-T\fR, \fB\-\-configtest\fR
 Test du fichier de configuration.
 .TP
 \fB\-V\fR, \fB\-\-version\fR

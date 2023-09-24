@@ -200,19 +200,24 @@ static in_status_t kw_main_directory(context_t *context, keyword_t *keyword, cha
 
 	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	if(0 == (argc = split(&args, argv, 1, 1)))
+	{
+		IN_CODE_DEBUG("Return IN_ST_SYNTAX_ERROR");
 		return malformed(context, arg0);
+	}
+
 	path = *argv;
 	if(IN_ST_OK != (status = in_directory_create(path, &dire)))
 	{
-		IN_CODE_DEBUG("Return %d", (int)status);
+		IN_CODE_DEBUG("Return %s", in_strstatus(status));
 		return error(context, status, "%s: cannot allocate new directory", arg0);
 	}
+
 	context->ct_data = (void *)dire;
 	status = subprocess_lines(context, kw_dire);
 	context->ct_data = NULL;
 	if(-1 == dire->dir_uid) dire->dir_uid = 0;
 	if(-1 == dire->dir_gid) dire->dir_gid = 0;
-	IN_CODE_DEBUG("Return %d", (int)status);
+	IN_CODE_DEBUG("Return %s", in_strstatus(status));
 	return status;
 }
 
@@ -236,7 +241,7 @@ static in_status_t kw_main_include(context_t *context, keyword_t *keyword, char 
 	status = IN_ST_OK;
 	if(0 == (argc = split(&args, argv, 1, 1)))
 	{
-		IN_CODE_DEBUG("Return %d", (int)status);
+		IN_CODE_DEBUG("Return IN_ST_SYNTAX_ERROR");
 		return malformed(context, arg0);
 	}
 	gval.gl_pathc = 0;
@@ -247,13 +252,13 @@ static in_status_t kw_main_include(context_t *context, keyword_t *keyword, char 
 		switch(gret)
 		{
 		case GLOB_NOSPACE:
-			IN_CODE_DEBUG("Return %d", IN_ST_SYSTEM_ERROR);
+			IN_CODE_DEBUG("Return IN_ST_SYSTEM_ERROR");
 			return error(context, IN_ST_SYSTEM_ERROR, "%s: insufisant memory space", arg0);
 		case GLOB_ABORTED:
 		case GLOB_NOMATCH:
 			break;
 		default:
-			IN_CODE_DEBUG("Return %d", IN_ST_INTERNAL);
+			IN_CODE_DEBUG("Return IN_ST_INTERNAL");
 			return warning(context, IN_ST_INTERNAL, "%s: unknown glob(3) error %d", arg0, gret);
 		}
 	}
@@ -270,7 +275,7 @@ static in_status_t kw_main_include(context_t *context, keyword_t *keyword, char 
 		}
 		IN_PROTECT_ERRNO(globfree(&gval));
 	}
-	IN_CODE_DEBUG("Return %d", (int)status);
+	IN_CODE_DEBUG("Return %s", in_strstatus(status));
 	return status;
 }
 
@@ -295,11 +300,13 @@ static in_status_t kw_main_settings(context_t *context, keyword_t *keyword, char
 	}
 #if defined(DEBUG)
 	retval = subprocess_lines(context, kw_sett);
-	IN_CODE_DEBUG("Return %d", retval);
+	IN_CODE_DEBUG("Return %s", in_strstatus(retval));
+	return retval;
 #else
 	return subprocess_lines(context, kw_sett);
 #endif
 }
+
 /*
  * directory definition keywords
  */
@@ -315,17 +322,25 @@ static in_status_t kw_dire_event(context_t *context, keyword_t *keyword, char *a
 	in_action_t    *act;
 
 	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
+
 	dir = (in_directory_t *)context->ct_data;
 	evs = strtok_r(args, ifs, &rem);
 	if(NULL == evs || '\0' == *evs || NULL == rem || '\0' == *rem)
+	{
+		IN_CODE_DEBUG("Return IN_ST_VALUE_ERROR");
 		return error(context, IN_ST_VALUE_ERROR, "%s: incomplete directive", arg0);
+	}
 	if(IN_ST_OK != (sta = in_str2events(evs, &msk)))
+	{
+		IN_CODE_DEBUG("Return IN_ST_VALUE_ERROR");
 		return error(context, IN_ST_VALUE_ERROR, "Bad event definition '%s'", evs);
+	}
 	if(0 != (msk & dir->dir_mask))
 	{
 		char evtstr[128];
 		IN_CODE_DEBUG("msk = %X, dir msk = %X", msk, dir->dir_mask);
 		in_events2str(evtstr, sizeof(evtstr), msk & dir->dir_mask);
+		IN_CODE_DEBUG("Return IN_ST_VALUE_ERROR");
 		return error(context, IN_ST_VALUE_ERROR, "Duplicate events : `%s'", evtstr);
 	}
 	while('\0' != *rem && isspace(*rem)) rem += 1;
@@ -338,12 +353,16 @@ static in_status_t kw_dire_event(context_t *context, keyword_t *keyword, char *a
 		}
 	}
 	if(NULL == (cmd = strdup(rem)))
+	{
+		IN_CODE_DEBUG("Return IN_ST_SYSTEM_ERROR");
 		return error(context, IN_ST_SYSTEM_ERROR, "Cannot duplicate string '%s'", rem);
+	}
 	pos = dir->dir_nactions++;
 	dir->dir_actions[pos].act_mask    = msk;
 	dir->dir_actions[pos].act_command = cmd;
 event_found:
 	dir->dir_mask |= msk;
+	IN_CODE_DEBUG("Return IN_ST_OK");
 	return IN_ST_OK;
 }
 
@@ -354,9 +373,15 @@ static in_status_t str2integer(const char *string, long *retval)
 	endpt = NULL;
 	value = strtol(string, &endpt, 0);
 	if(value < 0 || NULL != endpt || '\0' != *endpt)
+	{
+		IN_CODE_DEBUG("Return IN_ST_VALUE_ERROR");
 		return IN_ST_VALUE_ERROR;
+	}
 	if(NULL != retval)
+	{
 		*retval = value;
+	}
+	IN_CODE_DEBUG("Return IN_ST_OK");
 	return IN_ST_OK;
 }
 
@@ -369,7 +394,10 @@ static in_status_t kw_dire_group(context_t *context, keyword_t *keyword, char *a
 
 	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	if(0 == (argc = split(&args, argv, 1, 1)))
+	{
+		IN_CODE_DEBUG("Return IN_ST_SYNTAX_ERROR");
 		return malformed(context, arg0);
+	}
 	dire = (in_directory_t *)context->ct_data;
 	if(IN_ST_OK == str2integer(*argv, &value))
 	{
@@ -382,9 +410,13 @@ static in_status_t kw_dire_group(context_t *context, keyword_t *keyword, char *a
 		grent = getgrnam(*argv);
 		endgrent();
 		if(NULL == grent)
+		{
+			IN_CODE_DEBUG("Return IN_ST_NOT_FOUND");
 			return error(context, IN_ST_NOT_FOUND, "%s: unknown group `%s'", arg0, *argv);
+		}
 		dire->dir_gid = grent->gr_gid;
 	}
+	IN_CODE_DEBUG("Return IN_ST_OK");
 	return IN_ST_OK;
 }
 
@@ -397,13 +429,18 @@ static in_status_t kw_dire_shell(context_t *context, keyword_t *keyword, char *a
 
 	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	if(0 == (argc = split(&args, argv, 1, 1)))
+	{
+		IN_CODE_DEBUG("Return IN_ST_SYNTAX_ERROR");
 		return malformed(context, arg0);
+	}
 	dire = (in_directory_t *)context->ct_data;
 	if(NULL == (shell = strdup(*argv)))
 	{
+		IN_CODE_DEBUG("Return IN_ST_SYSTEM_ERROR");
 		return error(context, IN_ST_SYSTEM_ERROR, "Cannot duplicate string '%s'", shell);
 	}
 	dire->dir_shell = shell;
+	IN_CODE_DEBUG("Return IN_ST_OK");
 	return IN_ST_OK;
 }
 
@@ -416,7 +453,10 @@ static in_status_t kw_dire_user(context_t *context, keyword_t *keyword, char *ar
 
 	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	if(0 == (argc = split(&args, argv, 1, 1)))
+	{
+		IN_CODE_DEBUG("Return IN_ST_SYNTAX_ERROR");
 		return malformed(context, arg0);
+	}
 	dire = (in_directory_t *)context->ct_data;
 	if(IN_ST_OK == str2integer(*argv, &value))
 	{
@@ -429,9 +469,13 @@ static in_status_t kw_dire_user(context_t *context, keyword_t *keyword, char *ar
 		pwent = getpwnam(*argv);
 		endpwent();
 		if(NULL == pwent)
+		{
+			IN_CODE_DEBUG("Return IN_ST_NOT_FOUND");
 			return error(context, IN_ST_NOT_FOUND, "%s: unknown user `%s'", arg0, *argv);
+		}
 		dire->dir_uid = pwent->pw_uid;
 	}
+	IN_CODE_DEBUG("Return IN_ST_OK");
 	return IN_ST_OK;
 }
 
@@ -443,11 +487,20 @@ static in_status_t kw_logg_level(context_t *context, keyword_t *keyword, char *a
 
 	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	if(0 == (argc = split(&args, argv, 1, 1)))
+	{
+		IN_CODE_DEBUG("Return IN_ST_SYNTAX_ERROR");
 		return malformed(context, arg0);
+	}
 	if((in_log_level_t )-1 == (llev = in_log_level_by_name(*argv)))
+	{
+		IN_CODE_DEBUG("Return IN_ST_VALUE_ERROR");
 		return error(context, IN_ST_VALUE_ERROR, "%s: bad level name `%s'", arg0, *argv);
+	}
 	if(0 == (cliopts & CL_OPT_LOGLVL))
+	{
 		in_log_set_level(llev);
+	}
+	IN_CODE_DEBUG("Return IN_ST_OK");
 	return IN_ST_OK;
 }
 
@@ -459,21 +512,30 @@ static in_status_t kw_logg_set(context_t *context, keyword_t *keyword, char *arg
 
 	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	if(0 == (argc = split(&args, argv, 2, 1)))
+	{
+		IN_CODE_DEBUG("Return IN_ST_SYNTAX_ERROR");
 		return malformed(context, arg0);
+	}
 	ldrv = (char *)context->ct_data;
 	switch(in_log_tst_drv_opt(ldrv, argv[0], argv[1]))
 	{
 	case IN_LOG_BADOPTION:
+		IN_CODE_DEBUG("Return IN_ST_NOT_FOUND");
 		return error(context, IN_ST_NOT_FOUND, "%s: Log driver `%s' does not have `%s' as option", arg0, ldrv, argv[0]);
 	case IN_LOG_BADOPTVAL:
+		IN_CODE_DEBUG("Return IN_ST_VALUE_ERROR");
 		return error(context, IN_ST_VALUE_ERROR, "%s: Log driver `%s', option `%s', bad value `%s'", arg0, ldrv, argv[0], argv[1]);
 	case IN_LOG_BADDRIVER:
+		IN_CODE_DEBUG("Return IN_ST_INTERNAL");
 		return error(context, IN_ST_INTERNAL, "%s: Unknown log driver `%s'", arg0, ldrv);
 	default:
 		break;
 	}
 	if(0 == (cliopts & CL_OPT_LOGOPT))
+	{
 		(void)in_log_set_drv_opt(ldrv, argv[0], argv[1]);
+	}
+	IN_CODE_DEBUG("Return IN_ST_OK");
 	return IN_ST_OK;
 }
 
@@ -489,16 +551,25 @@ static in_status_t kw_sett_logging(context_t *context, keyword_t *keyword, char 
 	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	driver = strtok_r(args, ifs, &rest);
 	if(NULL == driver || '\0' == *driver || (NULL != rest && '\0' != *rest))
+	{
+		IN_CODE_DEBUG("Return IN_ST_SYNTAX_ERROR");
 		return malformed(context, arg0);
+	}
 	if(IN_LOG_BADDRIVER == in_log_driver_exists(driver))
+	{
+		IN_CODE_DEBUG("Return IN_ST_VALUE_ERROR");
 		return error(context, IN_ST_VALUE_ERROR, "Logging driver '%s' does not exists", driver);
+	}
 	context->ct_data = (void *)driver;
 	if(IN_ST_OK == (status = subprocess_lines(context, kw_logg)))
 	{
 		if(0 == (cliopts & CL_OPT_LOGDRV))
+		{
 			(void)in_log_set_driver(driver);
+		}
 	}
 	context->ct_data = NULL;
+	IN_CODE_DEBUG("Return %s", in_strstatus(status));
 	return status;
 }
 
@@ -509,12 +580,22 @@ static in_status_t kw_sett_pidfile(context_t *context, keyword_t *keyword, char 
 
 	IN_CODE_DEBUG("Entering (%p, %p, %s, %s)", context, keyword, arg0, args);
 	if(0 == (argc = split(&args, argv, 1, 1)))
+	{
+		IN_CODE_DEBUG("Return IN_ST_SYNTAX_ERROR");
 		return malformed(context, arg0);
+	}
 	if(-1 == in_ctl_pidfile(*argv))
+	{
+		IN_CODE_DEBUG("Return IN_ST_VALUE_ERROR");
 		return error(context, IN_ST_VALUE_ERROR, "%s: bad pidfile definition '%s'", arg0, *argv);
+	}
 	if((0 == (cliopts & CL_OPT_PIDFILE)) && (-1 == in_set_pidfile(*argv)))
+	{
+		IN_CODE_DEBUG("Return IN_ST_VALUE_ERROR");
 		return error(context, IN_ST_VALUE_ERROR, "%s: bad pidfile definition '%s'", arg0, *argv);
-	
+	}
+
+	IN_CODE_DEBUG("Return IN_ST_OK");
 	return IN_ST_OK;
 }
 
@@ -530,6 +611,7 @@ static size_t split(char **line, char **args, size_t nargs, int strict)
 	char    *na;
 	size_t   nb;
 
+	IN_CODE_DEBUG("Entering (%p, %p, %lu, %s)", line, args, nargs, strict ? "True" : "False");
 	for(li = na = *line, ca = args, nb = 0; na && nb < nargs; li = NULL, nb += 1, ca += 1)
 	{
 		na = strtok_r(li, ifs, &re);
@@ -540,8 +622,9 @@ static size_t split(char **line, char **args, size_t nargs, int strict)
 	*line = re;
 	if(strict && (nb < nargs || (re && *re != '\0')))
 	{
-		return 0;
+		nb = 0;
 	}
+	IN_CODE_DEBUG("Return %d", nb);
 	return nb;
 }
 
@@ -550,6 +633,8 @@ static in_status_t get_one_line(context_t *context, char **retv)
 	char *rval;
 	char *cpos;
 	char *epos;
+
+	IN_CODE_DEBUG("Entering (%p, %p)", context, retv);
 
 	epos = context->ct_buffre;
 	for(rval = context->ct_bufpos; rval < epos && isspace(*rval) && *rval != '\n'; rval += 1);
@@ -562,9 +647,11 @@ static in_status_t get_one_line(context_t *context, char **retv)
 			context->ct_lineno += 1;
 			while(cpos > rval && isspace(*cpos)) *(cpos--) = '\0';
 			*retv = rval;
+			IN_CODE_DEBUG("Return IN_ST_OK");
 			return IN_ST_OK;
 		}
 	}
+	IN_CODE_DEBUG("Return IN_ST_LINE_TOO_LONG");
 	return IN_ST_LINE_TOO_LONG;
 }
 
@@ -573,6 +660,8 @@ static in_status_t refill_buffer(context_t *context)
 	size_t      nbytes;
 	ssize_t     nread;
 	in_status_t status;
+
+	IN_CODE_DEBUG("Entering (%p)", context);
 
 	status = IN_ST_OK;
 
@@ -603,24 +692,34 @@ static in_status_t refill_buffer(context_t *context)
 		context->ct_buffre += nread;
 		*(context->ct_buffre) = '\0';
 	}
+	IN_CODE_DEBUG("Return %s", in_strstatus(status));
 	return status;
 }
 
 static in_status_t readline(context_t *context, char **retv)
 {
 	in_status_t status;
-	if(IN_ST_OK == get_one_line(context, retv))
-		return IN_ST_OK;
-	if(IN_ST_OK != (status = refill_buffer(context)))
+
+	IN_CODE_DEBUG("Entering (%p, %p)", context, retv);
+
+	if(IN_ST_OK != (status = get_one_line(context, retv)))
 	{
-		if(IN_ST_END_OF_FILE == status && context->ct_bufpos < context->ct_buffre)
+		if(IN_ST_OK != (status = refill_buffer(context)))
 		{
-			*retv = context->ct_bufpos;
-			return IN_ST_OK;
+			if(IN_ST_END_OF_FILE == status && context->ct_bufpos < context->ct_buffre)
+			{
+				*retv = context->ct_bufpos;
+				status =  IN_ST_OK;
+			}
 		}
-		return status;
+		else
+		{
+			status = get_one_line(context, retv);
+		}
 	}
-	return get_one_line(context, retv);
+
+	IN_CODE_DEBUG("Return %s", in_strstatus(status));
+	return status;
 }
 
 static in_status_t process_lines(context_t *context, const keyword_t *keywords)
@@ -631,6 +730,8 @@ static in_status_t process_lines(context_t *context, const keyword_t *keywords)
 	in_status_t     status;
 	keyword_t      *keyword;
 
+	IN_CODE_DEBUG("Entering (%p, %d)", context, keywords);
+
 	while(IN_ST_OK == (status = readline(context, &line)))
 	{
 		word = strtok_r(line, ifs, &rest);
@@ -639,28 +740,47 @@ static in_status_t process_lines(context_t *context, const keyword_t *keywords)
 		for(keyword = (keyword_t *)keywords; keyword->kw_name; keyword += 1)
 			if(0 == strcasecmp(word, keyword->kw_name))
 				goto found;
+		IN_CODE_DEBUG("Return IN_ST_SYNTAX_ERROR");
 		return warning(context, IN_ST_SYNTAX_ERROR, "unknown keyword %s", word);
 	found:
 		if(KW_FUNC_END == keyword->kw_func)
 		{
 			if(context->ct_is_top)
+			{
+				IN_CODE_DEBUG("Return IN_ST_SYNTAX_ERROR");
 				return warning(context, IN_ST_SYNTAX_ERROR, "misplaced %s directive", keyword->kw_name);
+			}
+			IN_CODE_DEBUG("Return IN_ST_OK");
 			return IN_ST_OK;
 		}
 		if(IN_ST_OK != (status = keyword->kw_func(context, keyword, word, rest)))
+		{
+			IN_CODE_DEBUG("Return %s", in_strstatus(status));
 			return status;
+		}
 	}
+#if defined(DEBUG)
+	status = (context->ct_is_top) ? IN_ST_OK : warning(context, IN_ST_PREMATURE_END_OF_FILE, "premature end of file");
+	IN_CODE_DEBUG("Return %s", in_strstatus(status));
+	return status;
+#else	
 	return (context->ct_is_top) ? IN_ST_OK : warning(context, IN_ST_PREMATURE_END_OF_FILE, "premature end of file");
+#endif
 }
 
 static in_status_t subprocess_lines(context_t *context, const keyword_t *keywords)
 {
 	int         is_top;
 	in_status_t status;
+
+	IN_CODE_DEBUG("Entering (%p, %p)", context, keywords);
+
 	is_top = context->ct_is_top;
 	context->ct_is_top = 0;
 	status = process_lines(context, keywords);
 	context->ct_is_top = is_top;
+
+	IN_CODE_DEBUG("Return %s", in_strstatus(status));
 	return status;
 }
 
@@ -678,12 +798,14 @@ static in_status_t read_from_file(const char *filename)
 	if(-1 == stat(filename, &finfo))
 	{
 		IN_PROTECT_ERRNO(in_log_perror(filename));
+		IN_CODE_DEBUG("Return %s", in_strstatus(status));
 		return status;
 	}
 
 	if(-1 == (filedesc = open(filename, O_RDONLY)))
 	{
 		IN_PROTECT_ERRNO(in_log_perror(filename));
+		IN_CODE_DEBUG("Return IN_ST_SYSTEM_ERROR");
 		return IN_ST_SYSTEM_ERROR;
 	}
 
@@ -697,15 +819,21 @@ static in_status_t read_from_file(const char *filename)
 
 	status = process_lines(&context, kw_main);
 	IN_PROTECT_ERRNO(close(filedesc));
+	IN_CODE_DEBUG("Return %s", in_strstatus(status));
 	return status;
 }
 
 in_status_t in_configuration_read(const char *filename, unsigned int optmask)
 {
+	in_status_t status;
+
 	IN_CODE_DEBUG("Entering (%s)\n", filename);
 
 	unicity = 0;
 	cliopts = optmask;
 	in_directory_purge();
-	return read_from_file(filename);
+	status = read_from_file(filename);
+
+	IN_CODE_DEBUG("Return %s", in_strstatus(status));
+	return status;
 }

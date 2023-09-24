@@ -39,6 +39,10 @@
 #include <unistd.h>
 #include <errno.h>
 
+#if defined(DEBUG)
+#include <string.h>
+#endif
+
 #include "inotify-daemon.h"
 
 extern pid_t in_forcefork(size_t);
@@ -56,7 +60,8 @@ pid_t in_forcefork(size_t retries)
 		if(-1 != (child = fork()))
 			break;
 		sverr = errno;
-		usleep(100000);	/* Sleep 100ms */
+		IN_CODE_DEBUG("Fork failed, errno = %d (%s) -- Waiting 100ms", sverr, strerror(sverr));
+		usleep(100000);	/* Waiting 100ms */
 		errno = sverr;
 	}
 	IN_CODE_DEBUG("pid = %d, Return %d", getpid(), child);

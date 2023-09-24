@@ -48,10 +48,9 @@
 extern in_status_t in_str2events(char *, uint32_t *);
 extern void        in_events2str(char *, size_t, uint32_t);
 extern int         in_events_init(void);
-extern in_status_t in_events_terminate(void);
+extern void        in_events_terminate(void);
 
-extern int in_events_fd;
-int in_events_fd = -1;
+static int in_events_fd = -1;
 
 static struct in_renamed_st ren_firsts[] = {
 	{ NULL,           ren_firsts + 1, NULL, 0, 0, "" },
@@ -98,6 +97,7 @@ in_status_t in_str2events(char *eventstr, uint32_t *rmask)
 	int              fnd = 0;
 
 	IN_CODE_DEBUG("Entering (%s, %p)", eventstr, rmask);
+
 	(void)strcpy(estr, eventstr);
 	mask = 0;
 	while(NULL != (pevt = in_next_option(&eventstr, buff, sizeof(buff), ",|")))
@@ -114,6 +114,7 @@ in_status_t in_str2events(char *eventstr, uint32_t *rmask)
 		if(0 == fnd)
 		{
 			retv = IN_ST_VALUE_ERROR;
+			break;
 		}
 		fnd = 0;
 	}
@@ -121,7 +122,8 @@ in_status_t in_str2events(char *eventstr, uint32_t *rmask)
 	{
 		*rmask = mask;
 	}
-	IN_CODE_DEBUG("Return %d", retv);
+	IN_CODE_DEBUG("Return %s", in_strstatus(retv));
+
 	return retv;
 }
 
@@ -134,18 +136,20 @@ void in_events2str(char *buffer, size_t bufsiz, uint32_t mask)
 	struct event_st *pev;
 
 	IN_CODE_DEBUG("Entering (%p, %lu, %X)", buffer, bufsiz, mask);
+
 	for(pev = events; pev->ev_name; pev += 1)
 	{
 		if(pev->ev_cplx)
 			continue;
 		if(pev->ev_mask & mask)
 		{
-			(void)in_fmt_string(&pos, &rst, sep);
-			(void)in_fmt_string(&pos, &rst, pev->ev_name);
+			in_fmt_string(&pos, &rst, sep);
+			in_fmt_string(&pos, &rst, pev->ev_name);
 			sep = "|";
 		}
 	}
 	*pos = '\0';
+
 	IN_CODE_DEBUG("Return");
 	return;
 }
@@ -290,12 +294,14 @@ void in_events_process(void)
 	return;
 }
 
-in_status_t in_events_terminate(void)
+void in_events_terminate(void)
 {
-	IN_CODE_DEBUG("Entering in_events_terminate");
+	IN_CODE_DEBUG("Entering ()");
+
 	if(-1 != in_events_fd)
 		(void)close(in_events_fd);
 	in_events_fd = -1;
+
 	IN_CODE_DEBUG("Return IN_ST_OK");
-	return IN_ST_OK;
+	return;
 }

@@ -14,7 +14,7 @@ managing filesystems events on defined directories.
 @ifnottex @c texi2pdf don't understand copying and insertcopying ???
 @c modifications must also be done in the titlepage
 @copying
-Copyright: Christian CAMIER & Quentin PERIDON 2022
+Copyright @copyright{} 2022 Christian CAMIER & Quentin PERIDON
 
 christian.c@@promethee.services
 
@@ -46,7 +46,7 @@ same conditions as regards security.
 
 The fact that you are presently reading this means that you have had
 knowledge of the CeCILL-B license and that you accept its terms.
-s@end copying
+@end copying
 @c WTF does the info get the copying output and the plaintext output not ????
 @ifplaintext
 @insertcopying
@@ -67,19 +67,38 @@ s@end copying
 @c @vskip 0pt plus 1filll
 
 @c modifications must also be done in the copying block
-Copyright @copyright{} 2022 Christian CAMIER <christian.c@@promethee.services>
+Copyright @copyright{} 2022 Christian CAMIER & Quentin PERIDON
 
-Permission to use, copy, modify, and distribute this software for any
-purpose with or without fee is hereby granted, provided that the above
-copyright notice and this permission notice appear in all copies.
+christian.c@@promethee.services
 
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+This software is a computer program whose purpose is to manage
+filesystems events on defined directories.
+
+This software is governed by the CeCILL-B license under French law and
+abiding by the rules of distribution of free software.  You can  use, 
+modify and/ or redistribute the software under the terms of the CeCILL-B
+license as circulated by CEA, CNRS and INRIA at the following URL
+"http://www.cecill.info". 
+
+As a counterpart to the access to the source code and  rights to copy,
+modify and redistribute granted by the license, users are provided only
+with a limited warranty  and the software's author,  the holder of the
+economic rights,  and the successive licensors  have only  limited
+liability. 
+
+In this respect, the user's attention is drawn to the risks associated
+with loading,  using,  modifying and/or developing or reproducing the
+software by the user in light of its specific status of free software,
+that may mean  that it is complicated to manipulate,  and  that  also
+therefore means  that it is reserved for developers  and  experienced
+professionals having in-depth computer knowledge. Users are therefore
+encouraged to load and test the software's suitability as regards their
+requirements in conditions enabling the security of their systems and/or 
+data to be ensured and,  more generally, to use and operate it in the 
+same conditions as regards security. 
+
+The fact that you are presently reading this means that you have had
+knowledge of the CeCILL-B license and that you accept its terms.
 @end titlepage
 
 @ifnottex
@@ -111,9 +130,7 @@ This document applies roughly to version @strong{@value{VERSION}} of Inotify-dae
 
 @section Description
 Inotify-daemon is a daemon that allows, on given directories, to initiate actions when
-some file system events occur. Inotify-daemon is a service that
-allows, on given directories, to initiate an action when certain
-events of the file system occur.
+some file system events occur.
 
 @node Invoking inotify-daemon
 @chapter How to run ``inotify-daemon''
@@ -133,14 +150,14 @@ Long options, preceded by two minus (@strong{-}) signs and composed of
 several characters to be more eloquent.
 @end itemize
 @subsubsection Short options
-Options requiring an argument, the latter is placed in the argument
-that follows the option.@*
+For options requiring an argument, the option argument is placed in the
+command line argument that follows the option.@*
 Example:
 @quotation
 @code{inotify-daemon -C /home/foo/myconfiguration.cfg}
 @end quotation
 @*
-Several options can be accumulated on the m eme argument of the online command. Thus,
+Several options can be accumulated on the same argument of the online command. Thus,
 the following two forms are equivalent:
 @quotation
 @code{inotify-daemon -f -T}@*
@@ -158,7 +175,7 @@ equivalent:
 @subsubsection Long options
 Long options, unlike short options, cannot be accumulated.
 If an option requires an argument, the argument is joined after the
-option, in the same argument of the line command, separated by an
+option, in the same argument of the command line, separated by an
 equal sign (@strong{=}).@*
 Example:
 @quotation
@@ -168,32 +185,35 @@ Example:
 @multitable @columnfractions .10 .25 .65
 @headitem short @tab long @tab Description
 @item @strong{C} fil @tab @strong{configuration}=fil
-@tab Defines the file to be taken into account when dismounting.
-The argument is the path to the desired configuration file.
-The defaault value is @strong{${sysconfdir}/inotify-daemon.conf}.
+@tab Defines the file to be taken into account when
+@strong{inotify-daemon} starts. The argument is the path to the
+desired configuration file. The default value is
+@strong{${sysconfdir}/inotify-daemon.conf}.
 @item @strong{f} @tab @strong{foreground}
-@tab xecution in foreground. Useful for debugging.
+@tab Execution in foreground. Useful for debugging.
 @item @strong{h} @tab @strong{help}
 @tab Displays a short help of inotify-daemon.
 @item @strong{L} drv @tab @strong{logdriver}=drv
-@tab Defines the driver to be used for recording execution traces. For
-more information, see ``Log management''.
+@tab Defines the driver to be used for recording execution
+messages. For more information, see ``Log management''.
 @item @strong{l} lvl @tab @strong{loglevel}=lvl
-@tab Defines the minimum trace level to be recorded in the system
+@tab Defines the minimum message level to be recorded in the system
 logs.For more information, see ``Log management''.
 @item @strong{o} o=v @tab @strong{logoption}=o=v
-@tab Set a logging system option. For
-more information, see ``Log management''.
+@tab Set a logging system option. For more information, see ``Log
+management''.
 @item @strong{p} fil @tab @strong{pidfile}=fil
 @tab Path to the PID file.@*
-Specify the name and path of the file used to record the
+Specify the name and path of the file used to store the
 @strong{inotify-daemon}'s process ID.
 @item @strong{R} @tab @strong{reload}
 @tab Ask the running demon to reread his configuration file.
 @item @strong{S} @tab @strong{stop}
 @tab Ask the running daemon to stop.
-@item @strong{T} @tab @strong{test}
-@tab COnfiguration test
+@item @strong{s} @tab @strong{status}
+@tab Test if daemon is running. All outputs are @strong{info} level.
+@item @strong{T} @tab @strong{configtest}
+@tab Test the configuration file.
 @item @strong{V} @tab @strong{version}
 @tab Prints the @strong{inotify-daemon} version number and exits.
 @end multitable
@@ -204,7 +224,7 @@ Specify the name and path of the file used to record the
 @subsection Presentation
 All @strong{inotify-daemon} behaviors are defined in a configuration
 file.@*
-By default, the configuration file used is @strong{${prefix}/etc/inotify-daemon.conf}.
+By default, the configuration file used is @strong{${sysconfdir}/inotify-daemon.conf}.
 @subsection Structure of the configuration file
 The configuration file is a text file (ASCII). Blank lines (or filled
 only with white characters) and lines whose first non-white character
@@ -215,62 +235,63 @@ possible arguments.@*
 Some of these directives are sections (groups of directives).
 Arguments are separated by one or more spaces and/or tabs.
 A section begins with a line containing a section directive and ends
-with a line containing only the end keyword. Sections can be nested.@*
+with a line containing only the @strong{END} keyword. Sections can be nested.@*
 Simple section sample :
 @multitable @columnfractions .2 .8
 @item
 @tab
-@code{@strong{directory} /var/lib/input}
+@code{@strong{DIRECTORY} /var/lib/input}
 @quotation
-@code{@strong{event} close_write new_file.sh %D %F}@*
+@code{@strong{EVENT} close_write new_file.sh %D %F}@*
 @code{... }
 @end quotation
-@code{@strong{end}}
+@code{@strong{END}}
 @end multitable
 @*
 Nested sections exemple :
 @multitable @columnfractions .2 .8
 @item
 @tab
-@code{@strong{settings} /tmp}
+@code{@strong{SETTINGS}}
 @quotation
 @code{... }@*
-@code{@strong{logging} file}
+@code{@strong{LOGGING} file}
 @quotation
-@code{@strong{set} filename /var/log/ind.log}@*
+@code{@strong{SET} filename /var/log/ind.log}@*
 @code{...}
 @end quotation
-@code{@strong{end}}
+@code{@strong{END}}
 @end quotation
-@code{@strong{end}}
+@code{@strong{END}}
 @end multitable
 @*
 The higher level directives are:
-@multitable @columnfractions .10 .90
-@c @multitable {directory} {description description description description description description description}
-@item @strong{settings} @tab
-Single directive, normally not in the configuration file, initiating a
-section to define the global behavior of @strong{inotify-daemon}.
-@item @strong{directory} @tab
-Directive to define a section to define, for a directory
-given, the actions to be performed on the reception of defined
-events.
-@item @strong{include} @tab
+@multitable @columnfractions .14 .86
+@c @multitable {DIRECTORYXXX} {description description description description description}
+@item @strong{SETTINGS} @tab
+Single directive, normally at the head of the main configuration file,
+initiating a section to define the global behavior of
+@strong{inotify-daemon}.
+@item @strong{DIRECTORY} @tab
+Section describing the behavior, for a given directory, when file
+system's events occur.
+@item @strong{INCLUDE} @tab
 Directive to include files containing bits of configurations.
 @end multitable
+@page
 @subsection The arguments of the directives
 @subsubsection The different types of arguments
 Some directives take arguments with specific semantics.@*
 These types of arguments are:
 @itemize @bullet
 @item Booleans
-@item Entiers
+@item Integers
 @item Predefined values
 @item Combinations of predefined values
 @end itemize
 @subsubsection The booleans
-The arguments of type booleens, used as switches. The possible values
-are true and false.@*
+The arguments of type booleens are used as switches. The possible values
+are @strong{true} and @strong{false}.
 To designate these values in the configuration file, the possibilities
 are as follows:
 @multitable @columnfractions .02 .18 .80
@@ -300,75 +321,60 @@ chosen from among values predefined accepts combinations of these
 values. In this case, the different values are placed one after the
 other, separated by a comma (@strong{,}) or by a vertical bar
 (@strong{|}) without spaces or tabs.
-Example in the case of the ``event'' directive:
+Example in the case of the ``@strong{EVENT}'' directive:
 @quotation
-@code{event close_write@strong{,}close_nowrite action}@*
-@code{event close_write@strong{|}close_nowrite action}@*
+@code{EVENT close_write@strong{,}close_nowrite action}@*
+@code{EVENT close_write@strong{|}close_nowrite action}@*
 @end quotation
-@section The ``settings'' directive
+@page
+@section The ``SETTINGS'' directive
 @subsection Presentation
 This directive indicates the beginning of the section in which the
 overall behaviours (excluding management of events on directories) are
 defined.@*
 This directive does not take arguments.
-@subsection The sub-directives of ``Settings''
-The sub-directives in the settings section are:
-@multitable @columnfractions .10 .90
-@item @strong{pidfile} @tab
+@subsection The sub-directives of ``SETTINGS''
+The sub-directives in the @strong{SETTINGS} section are:
+@multitable @columnfractions .12 .88
+@item @strong{PIDFILE} @tab
 Specify the name and path of the file used to record the
 @strong{inotify-daemon}'s process ID..@*
-@item @strong{logging} @tab
+@item @strong{LOGGING} @tab
 Indicates the beginning of the subsection in which records are defined in the
 system logs.
 @end multitable
-@subsection The ``pidfile'' directive
+@subsection The ``PIDFILE'' directive
 This directive takes, as a single argument, the absolute path of the file that should contain
 the process identifier (PID) when the daemon is running.@*
-The default is @code{/var/run/inotify-daemon.pid}
-@subsection The ``logging'' directive
+The default is @code{@strong{/var/run/inotify-daemon.pid}}
+@subsection The ``LOGGING'' directive
 @subsubsection Forword
-This section only documents the guidelines. For more details on log
-management see
-@c @xref{Log management,,Log management}.
+This section only documents the guidelines. For more details on
+logging management see
+@xref{Log management,,System logging management}.
 @subsubsection Presentation
 This directive defines a section in which it is indicated how
-inotify-daemon records application traces.@*
+inotify-daemon records application messages
 This dirrective takes, as argument, the driver to use to record
 logs.@*
-In the @strong{logging} section the following guidelines are accepted:
+In the @strong{LOGGING} section the following directives are accepted:@*
 @multitable @columnfractions .10 .90
-@item @strong{level} @tab
+@item @strong{LEVEL} @tab
 Defines the level at which traces are recorded.
-@item @strong{set} @tab
-Sets an option for logging traces.
+@item @strong{SET} @tab
+Sets an option for message's logging system.
 @end multitable
-@subsubsection The ``level'' directive
+@subsubsection The ``LEVEL'' directive
 This directive takes, as argument, the minimum level of application
 traces that will be recorded.@*
-The possible levels are:
-@itemize @bullet
-@item @strong{ALERT}
-@item @strong{CRIT}
-@item @strong{DEBUG}
-@item @strong{EMERG}
-@item @strong{ERROR}
-@item @strong{INFO}
-@item @strong{NOTICE}
-@item @strong{WARNING}
-@end itemize
 @*
 Exemple :
 @quotation
-@code{@strong{level} notice}
+@code{@strong{LEVEL} NOTICE}
 @end quotation
 @*
-Note
-@quotation
-If this directive is used several times, it is the last instance which
-imposes the minimum level.
-@end quotation
-@subsubsection The ``set'' directive
-This directive sets an option for the trace logging system.@*
+@subsubsection The ``SET'' directive
+This directive sets an option for the message's logging system.@*
 It takes two arguments:
 @multitable @columnfractions .10 .90
 @item @strong{option}
@@ -379,18 +385,429 @@ It takes two arguments:
 @*
 Exemple (case logging to file):
 @quotation
-@code{@strong{set} filename /var/log/inotify-daemon}.log@*
-@code{@strong{set} stayopen off}
+@code{@strong{SET} filename /var/log/inotify-daemon}.log@*
+@code{@strong{SET} stayopen off}
 @end quotation
 @*
 Exemple (case logging using syslog):
 @quotation
-@code{@strong{set} facility daemon}@*
-@code{@strong{set} ident toto}@*
-@code{@strong{set} options ndelay|perror|pid}
+@code{@strong{SET} facility daemon}@*
+@code{@strong{SET} ident toto}@*
+@code{@strong{SET} options ndelay|perror|pid}
 @end quotation
-@section The ``directory'' directive
-@subsection Presentation ********
-@subsection Syntax **********
-@subsection ``user''
+@section The ``DIRECTORY'' directive
+@subsection Presentation
+This directive opens a section in which the actions to be taken on
+events on a given directory are defined.
+@subsection Syntax
+This directive takes, as a single argument, the absolute path of the
+target directory.
+This directive is used as follows:
+@quotation
+@code{@strong{DIRECTORY} directory_absolute_path}
+@quotation
+@code{...}
+@end quotation
+@code{@strong{END}}
+@end quotation
+@*
+Exemple:
+@quotation
+@code{@strong{DIRECTORY} /tmp}
+@quotation
+@code{EVENT DELETE echo "File %D/%F has been deleted"}
+@end quotation
+@code{@strong{END}}
+@end quotation
+@subsection The sub-directives of ``DIRECTORY''
+The sub-directives in the @strong{DIRECTORY} section are:
+@multitable @columnfractions .10 .90
+@item @strong{USER}@tab
+User under whose identity the actions will be executed.
+@item @strong{GROUP}@tab
+Group under whose identity the actions will be executed.
+@item @strong{SHELL}@tab
+Command interpreter used to execute the actions. 
+@item @strong{EVENT}@tab
+Defines an action for one or more events on the target directory.
+@end multitable
+@subsection The ``USER'' directive
+This directive indicates under which user identity (@strong{UID}) the
+actions are executed.
+@*
+This directive take, as single argument, a valid user name or an
+integer.
+Exemple :
+@quotation
+@code {@strong{USER} www-data}
+@end quotation
+@*
+The default value is ``@strong{nobody}''.
+@subsection The ``GROUP directive
+This directive indicates under which group identity (@strong{GID}) the
+actions are executed.
+@*
+This directive take, as single argument, a valid group name or an
+integer.
+Exemple :
+@quotation
+@code {@strong{GROUP} www-data}
+@end quotation
+@*
+The default value is ``@strong{nogroup}''.
+@subsection La directive ``SHELL''
+This directive define with command langage will be used to execute the
+actions.
+@*
+Exemple :
+@quotation
+@code {@strong{SHELL} /bin/csh}
+@end quotation
+@*
+The default value is ``@strong{/bin/sh}''.
+@subsection La directive ``EVENT''
+@subsubsection Presentation
+This directive defines an action to execute when one or more events
+occur in the directory. 
+@subsubsection The different events
+This directive accept the folloing events (These events can be
+combined) :
+@multitable @columnfractions .25 .75
+@item @strong{ACCESS} @tab
+The file that caused the event has was read.
+@item @strong{ATTRIB} @tab
+The meta data (owner, group, access, ...) of the file that caused the
+event havechanged.
+@item @strong{CLOSE} @tab
+Alias for @strong{CLOSE_WRITE|CLOSE_NOWRITE}
+@item @strong{CLOSE_WRITE} @tab
+The file that caused the event was closed after being opened for
+writing.
+@item @strong{CLOSE_NOWRITE} @tab
+The file that caused the event was closed after being opened for
+read only.
+@item @strong{CREATE} @tab
+The file that caused the event has been created.
+@item @strong{DELETE} @tab
+The file that caused the event has been deleted.
+@item @strong{DELETE_SELF} @tab
+The directory itself has been deleted.
+@item @strong{MODIFY} @tab
+The file that caused the event has been modified.
+@item @strong{MOVE_SELF} @tab
+The directory itself has been moved or renamed.
+@item @strong{OPEN} @tab
+The file that caused the event has been opened.
+@item @strong{RENAME} @tab
+The file that caused the event has been renamed.
+@end multitable
+@*
+@ifinfo
+Note :
+@end ifinfo
+@ifnotinfo
+@strong{Note :}
+@end ifnotinfo
+@quotation
+For different actions on different events, several @strong{EVENT} directives
+can coexist within the same @strong{DIRECTORY} section. 
+@end quotation
+@subsubsection Syntax
+This directive is used as follows:
+@quotation
+@code{@strong{EVENT} events action}
+@end quotation
+@*
+With :
+@multitable @columnfractions .20 .80
+@item @strong{events} : @tab
+An event or a combinations of events.
+@item @strong{command} : @tab
+The command to execute when one of the events occurs. The command
+starts with the first non white character and ends with the end of the
+line. Spaces and tabs are therefore accepted.@*
+The command is a string with spécifics patterns.
+Except the percent character (@strong{%}) who define a specific
+pattern, characters are taken into account as is.@*
+The percent character (@strong{%}) defines, depending on the characters
+that follow, a pattern that will be replaced before the command
+execution. These patterns are :
+@multitable @columnfractions .10 .90
+@item @code{@strong{%}} @tab
+The percent character itself.
+@item @code{@strong{c}} @tab
+Decimal value of the ``Cookie'' associated to the event.
+@item @code{@strong{cb}} @tab
+Binary value, on 32 digits, of the ``Cookie'' associated to the event.
+@item @code{@strong{cd}} @tab
+Decimal value of the ``Cookie'' associated to the event.
+@item @code{@strong{co}} @tab
+Octal value, on 11 digits, of the ``Cookie'' associated to the event.
+@item @code{@strong{cx}} @tab
+Hexadecimal, lower case, value, on 8 digits, of the ``Cookie''
+associated to the event.
+@item @code{@strong{cX}} @tab
+Hexadecimal, upper case, value, on 8 digits, of the ``Cookie''
+associated to the event.
+@item @code{@strong{D}} @tab
+Path of the directory in witch the evengt occurred.
+@item @code{@strong{E}} @tab
+Name of the event.
+@item @code{@strong{e}} @tab
+Decimal value of the event mask.
+@item @code{@strong{eb}} @tab
+Binary value, on 32 digits, of the event mask.
+@item @code{@strong{ed}} @tab
+Decimal value of the event mask.
+@item @code{@strong{eo}} @tab
+Octal value, on 11 digits, of the event mask;
+@item @code{@strong{ex}} @tab
+Hexadecimal, lower case, value, on 8 digits, of the event mask.
+@item @code{@strong{eX}} @tab
+Hexadecimal, upper case, value, on 8 digits, of the event mask.
+@item @code{@strong{F}} @tab
+Name of the file that caused the event. In the case of a
+@strong{RENAME} event, this is the new file name. 
+@item @code{@strong{O}} @tab
+Old file name in case of @strong{RENAME} event
+@end multitable
+@end multitable
+@*
+@page
+Exemples:
+@quotation
+@code{EVENT rename @strong{echo "%D %Cx %O has been renamed to %F"}}@*
+@code{EVENT close_write @strong{ls -l %D/%F}}
+@end quotation
+@section The ``INCLUDE'' directive
+@subsection Presentation
+This directive allows you to include files containing configuration
+items.
+@subsection Syntax
+this directive take an unique argument, the file name to be
+included.@*
+Exemple:
+@quotation
+@code{@strong{INCLUDE} ${sysconfdir}/inotify-daemon.conf.local}
+@end quotation
+@*
+It is also possible to define a set of files using the file name
+generation defined by @strong{glob(7)}.@*
+It is thus possible to include all files with the @strong{.conf}
+extension of a given directory as follows:
+@quotation
+@code{@strong{INCLUDE} ${sysconfdir}/inotify-daemon.d/*.conf}
+@end quotation
+@*
+Note that if the file to include does not exist, or the file name
+generation does not return any existing files, it will not be
+considered a configuration error.
+@node Log management
+@chapter System logging management
+@section Message levels
+@subsection Presentation
+Message levels determine the importance of these. They are modeled on
+syslog(7) levels.
+@subsection The mesage levels
+The messages levels ara, in order of decreasing importance:
+@multitable @columnfractions .15 .85
+@item @strong{EMERG}  @tab The system is unusable.
+@item @strong{ALERT}  @tab Action must be taken immediately.
+@item @strong{CRIT}   @tab Critical condition.
+@item @strong{ERROR}  @tab Error condition.
+@item @strong{WARNING}@tab Warning condition.
+@item @strong{NOTICE} @tab Normal, but significant, condition.
+@item @strong{INFO}   @tab Informational message.
+@item @strong{DEBUG}  @tab Debug level message.
+@end multitable
+@*
+The level of the messages considered can be defined by the
+@strong{LEVEL} directive in the @strong{LOGGING} section. Only
+messages that are at or above the level defined by this directive will
+be logged.
+@section The drivers
+@subsection Presentation
+@strong{Inotify-daemon} allows you to log messages in different
+ways. Each way of recording messages corresponds to a driver.@*
+The available drivers are:
+@multitable @columnfractions .10 .90
+@item @strong{DEFAULT} @tab
+This driver redirects messages to the standard output (stdout) or the
+standard error (stderr).
+@item @strong{FILE} @tab
+This driver redirects messages to a given file.
+@item @strong{SYSLOG} @tab
+This driver redirects messages to the  @strong{syslog}(7) subsystem.
+@end multitable
+@*
+@ifinfo
+Note :
+@end ifinfo
+@ifnotinfo
+@strong{Note :}
+@end ifnotinfo
+@quotation
+Each driver has his own options.
+@end quotation
+@section The options
+@subsection The global options 
+@subsubsection Presentation
+The global options are applicable regardless of the driver used.
+@subsubsection The various global options
+The global options are:
+@multitable @columnfractions .17 .83
+@item @strong{ACT_ERR_LVL}@tab
+Specifies under which level to record what commands write to the
+standard output (stdout).
+@item @strong{ACT_OUT_LVL}@tab
+Specifies under which level to record what commands write to the
+error output (stderr).
+@item @strong{TIMESTAMP}  @tab
+Set the format of the message timestamp.
+@end multitable
+@subsubsection The ``ACT_ERR_LVL'' option
+The global option @strong{ACT_ERR_LVL} specifies under witch level
+will be used to record the standard error of the executions of the
+commands.@*
+This option takes, as argument, a message level.@*
+The default value is @strong{NOTICE}.
+@subsubsection The ``ACT_OUT_LVL'' option
+The global option @strong{ACT_OUTL} specifies under witch level
+will be used to record the standard output of the executions of the
+commands.@*
+This option takes, as argument, a message level.@*
+The default value is @strong{DEBUG}.
+@subsubsection The ``TIMESTAMP'' option
+The glovbal option @strong{TIMESTAMP} define the format of messages
+timestamps.@*
+This option take, as argument, a string in the @strong{strftime(3)}
+format.@*
+The default value is: @code{@strong{%d/%m/%Y %H:%M:%S}}.
+@subsection Specific options for the ``DEFAULT'' driver
+The only option for the @strong{DEFAULT} divreis
+@strong{CHANNEL}. This option indicate on witch channel will be
+written messages. Possibles values are:
+@multitable @columnfractions .10 .90
+@item @strong{STDOUT}
+@tab Messages are displayed on the standard output.
+@item @strong{STDERR}
+@tab Messages are displayed on the standard error.
+d'erreur.
+@end multitable
+@*
+The default value is @strong{STDERR}.
+@subsection Specific options for the ``FILE'' driver
+@subsubsection The various options
+The possible options for the @strong{FILE} driver are:
+@multitable @columnfractions .18 .83
+@item @strong{FILENAME}
+@tab Define the file name where to write the messages.
+@item @strong{MODE}
+@tab Define the log file creation mode.
+@item @strong{STAYOPEN}
+@tab Define if the the file must stay open or if the file is opened
+and closed at each message.
+@item @strong{TIMESTAMPED}
+@tab Specify that filename contain timestamp informations.
+@end multitable
+@subsubsection The ``FILENAME'' option
+This option indicate the file name used to store messages.@*
+The default value is @code{@strong{${prefix}/var/log/inotify-daemon.log}}
+@subsubsection The ``MODE'' option
+File creation mode for the log file. The value is an octal number
+between 000 and 777 who defines the access permissions of the file
+according to @strong{chamod(2)}.@*
+The default value is @code{@strong{600}} (read and write access for
+the owner, nothing for the group and others).
+@subsubsection The ``STAYOPEN'' option
+Define if the log file must stay opened between to messages. This
+option take a boolean value.@*
+In case this value is @strong{YES} and the file name is timestamped,
+the file name is recomputed for  each message. If the recomputed
+value differs from the opened file name, the  current file  is closed
+and a new file using the computed value is created.@*
+The default value is @code{@strong{NO}}
+@subsubsection The ``TIMESTAMPED'' option
+Defines if the file name is timestamped. This option takes a boolean
+value.@*
+If this option is activated, the filename is computed according
+@strong{strftime(3)}.@*
+The default value is @code{@strong{NO}}
+@subsection Specific options for the ``SYSLOG driver
+@subsubsection The various options
+The possible options for the @strong{SYSLOG} driver are:
+@multitable @columnfractions .10 .90
+@item @strong{FACILITY}
+@tab @strong{Syslog(3)} facility definition.
+@item @strong{IDENT}
+@tab String prepended to every messages by @strong{syslog(3)}.
+@item @strong{OPTIONS}
+@tab @strong{Syslog(3)} options.
+@end multitable
+@page
+@subsubsection The ``FACILITY'' option
+This option indicates with @strong{syslog(3)} facility will be used
+for the messages.@*
+Possible values are :
+@multitable @columnfractions .15 .85
+@item @strong{AUTH}
+@tab Security/authorization messages
+@item @strong{AUTHPRIV}
+@tab Security/authorization messages (private)
+@item @strong{CRON}
+@tab Clock daemon (@strong{cron} and @strong{at})
+@item @strong{DAEMON}
+@tab System daemons without separate facility value
+@item @strong{FTP}
+@tab FTP daemon
+@item @strong{KERN}
+@tab Kernel messages
+@item @strong{LOCAL0}@*@ @ @ @`a@*@strong{LOCAL7}
+@tab Local use
+@item @strong{LPR}
+@tab Line printer subsystem.
+@item @strong{MAIL}
+@tab Mail subsystem.
+@item @strong{NEWS}
+@tab USENET news subsystem.
+@item @strong{SYSLOG}
+@tab Messages generated internally by @strong{syslogd(8)}.
+@item @strong{USER}
+@tab generic user level messages.
+@item @strong{UUCP}
+@tab UUCP subsystem.
+@end multitable
+@*
+The default value is @strong{DAEMON}.
+@subsubsection The ``IDENT'' option
+This option defines a character string that will be prepended to every
+message.@*
+The default value is @code{@strong{inotify-daemon}}
+@subsubsection The ``OPTIONS'' option
+This option specifies a set of operation controls used when
+@strong{openlog(3)} is called.@*
+The expected value for ths option can be @strong{NONE} to indicate no
+options or a combination of the following predefined values:
+@multitable @columnfractions .10 .90
+@item @strong{CONS}
+@tab Write directly to the system console if there is an  error while sending to the system logger.
+@item @strong{NDELAY}
+@tab Open  the  connection immediately (normally, the connection is
+opened when the first message is logged). This may  be  useful,  for
+example, if a subsequent @strong{chroot(2)} would make the pathname
+used internally by  the  logging facility unreachable.
+@item @strong{NOWAIT}
+@tab Don't  wait  for child processes that may have been created while
+logging the message.
+@item @strong{ODELAY}
+@tab The converse of LOG_NDELAY; opening of the connection is delayed
+until syslog() is called.
+@item @strong{PERROR}
+@tab Also  log  the message to stderr.
+@item @strong{PID}
+@tab Include the caller's PID with each message.
+@end multitable
+@*
+The default value is @strong{PID}.
+
 @bye

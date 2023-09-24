@@ -215,7 +215,9 @@ processus (pid) du d@'emon en cours d'ex@'ecution.
 configuration.
 @item @strong{S} @tab @strong{stop}
 @tab Demande, au d@'emon en cours d'ex@'ecution de s'arr@^eter.
-@item @strong{T} @tab @strong{test}
+@item @strong{s} @tab @strong{status}
+@tab Test si le d@'emon est en cours d'ex@'ecution.
+@item @strong{T} @tab @strong{configtest}
 @tab Test de la configuration
 @item @strong{V} @tab @strong{version}
 @tab Affiche la version du programme.

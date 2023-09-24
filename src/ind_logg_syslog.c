@@ -53,9 +53,9 @@ static int slog_setval_facility(const char *, int);
 static int slog_setval_ident   (const char *, int);
 static int slog_setval_options (const char *, int);
 
-static char slog_ident[128] = "unnamed";
+static char slog_ident[128] = "inotify-daemon";
 static int  slog_options    = LOG_PID;
-static int  slog_facility   = LOG_USER;
+static int  slog_facility   = LOG_DAEMON;
 
 struct slog_sopts_st {
 	const char  *opt_name;

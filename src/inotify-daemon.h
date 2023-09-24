@@ -169,7 +169,7 @@ struct in_logger_st;
 /* ind_comm.c */
 extern size_t      in_cmd_count (struct pollfd *);
 extern void        in_cmd_exited(pid_t);
-extern int         in_cmd_log   (struct pollfd *, size_t);
+extern void        in_cmd_log   (struct pollfd *, size_t);
 extern in_status_t in_cmd_run   (struct in_event_st *);
 
 /* ind_conf.c */
@@ -186,7 +186,9 @@ extern void        in_directory_purge     (void);
 extern void in_engine(void) __attribute__((noreturn));
 
 /* ind_erro.c */
-extern const char *in_strerror(in_status_t);
+#if defined(DEBUG)
+extern const char *in_strstatus(in_status_t);
+#endif
 
 /* ind_forl.c */
 extern  pid_t in_forcefork(size_t);
@@ -209,7 +211,7 @@ extern in_status_t in_str2events(char *, uint32_t *);
 extern void        in_events2str(char *, size_t, uint32_t);
 extern int         in_events_init(void);
 extern void        in_events_process(void);
-extern in_status_t in_events_terminate(void);
+extern void        in_events_terminate(void);
 
 /* ind_logg.c */
 #define IN_LOG_OK         0

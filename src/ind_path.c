@@ -43,7 +43,7 @@
 
 #include "inotify-daemon.h"
 
-extern int    in_mkpath(const char *, int);
+extern int in_mkpath(const char *, int);
 
 int in_mkpath(const char *path, int mode)
 {

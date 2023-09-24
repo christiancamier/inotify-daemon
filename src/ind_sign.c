@@ -78,6 +78,8 @@ int in_signal_init(void)
 		exit(1);
 	}
 	in_signal_fd = sigfds;
+
+	IN_CODE_DEBUG("Return %d", sigfds);
 	return sigfds;
 }
 
@@ -139,6 +141,8 @@ void in_signal_process(void)
 			break;
 		}
 	}
+
+	IN_CODE_DEBUG("Return");
 	return;
 }
 
@@ -146,7 +150,10 @@ void in_signal_terminate(void)
 {
 	IN_CODE_DEBUG("Entering ()");
 	if(-1 != in_signal_fd)
+	{
 		(void)close(in_signal_fd);
+	}
+	IN_CODE_DEBUG("Return");
 	return;
 }
 

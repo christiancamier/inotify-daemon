@@ -77,10 +77,8 @@ in_next_option(
 				dst  = dst + 1;
 			}
 		}
-		if('\0' != *src)
-			*source = src + 1;
-		else
-			*source = src;
+		if('\0' != *src) *source = src + 1;
+		else		 *source = src;
 		*dst = '\0';
 	}
 	IN_CODE_DEBUG("Return %s", ret);

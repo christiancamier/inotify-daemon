@@ -56,18 +56,18 @@ static struct tm *(*xxtime)(const time_t *, struct tm *) = localtime_r;
 
 void
 in_fmt_char(
-	char       **buffer,
+	char       **bufptr,
 	size_t      *bufsiz,
 	char         character
 	)
 {
 	size_t      s = *bufsiz;
-	char       *p = *buffer;
+	char       *p = *bufptr;
 	
 	if(s > 0)
 	{
 		*p =  character;
-		*buffer = p + 1;
+		*bufptr = p + 1;
 		*bufsiz = s - 1;
 	}
 	return;
@@ -75,7 +75,7 @@ in_fmt_char(
 
 void
 in_fmt_fmt(
-	char       **buffer,
+	char       **bufptr,
 	size_t      *bufsiz,
 	const char  *format,
 	...
@@ -83,20 +83,20 @@ in_fmt_fmt(
 {
 	va_list	ap;
 	va_start(ap, format),
-	in_fmt_vfmt(buffer, bufsiz, format, ap);
+	in_fmt_vfmt(bufptr, bufsiz, format, ap);
 	va_end(ap);
 	return;
 }
 
 void
 in_fmt_string(
-	char       **buffer,
+	char       **bufptr,
 	size_t      *bufsiz,
 	const char  *string
 	)
 {
 	const char *sp = string;
-	char       *pb = *buffer;
+	char       *pb = *bufptr;
 	size_t      bs = *bufsiz;
 
 	while('\0' != *sp)
@@ -105,14 +105,14 @@ in_fmt_string(
 			break;
 		*(pb++) = *(sp++), bs -= 1;
 	}
-	*buffer =  pb;
+	*bufptr =  pb;
 	*bufsiz =  bs;
 	return;
 }
 
 void
 in_fmt_vfmt(
-	char       **buffer,
+	char       **bufptr,
 	size_t      *bufsiz,
 	const char  *format,
 	va_list      ap
@@ -121,17 +121,17 @@ in_fmt_vfmt(
 	size_t  bs = *bufsiz;
 	size_t  rs;
 
-	rs = vsnprintf(*buffer, bs, format, ap);
+	rs = vsnprintf(*bufptr, bs, format, ap);
 	if(rs > bs)
 		rs = bs;
-	*buffer += rs;
+	*bufptr += rs;
 	*bufsiz -= rs;
 	return;
 }
 
-ssize_t in_fmt_date(char **buffer, size_t *bufsiz, const char *format, struct tm *tm)
+ssize_t in_fmt_date(char **bufptr, size_t *bufsiz, const char *format, struct tm *tm)
 {
-	char   *buf = *buffer;
+	char   *buf = *bufptr;
 	size_t  bsz = *bufsiz;
 	size_t  nbw;
 
@@ -139,7 +139,7 @@ ssize_t in_fmt_date(char **buffer, size_t *bufsiz, const char *format, struct tm
 	if(nbw > 0)
 	{
 		*bufsiz -= nbw;
-		*buffer += nbw;
+		*bufptr += nbw;
 	}
 
 	return (ssize_t)nbw;
@@ -148,12 +148,12 @@ ssize_t in_fmt_date(char **buffer, size_t *bufsiz, const char *format, struct tm
 void in_fmt_timestamp_setgmt(void) { xxtime = gmtime_r;    return; }
 void in_fmt_timestamp_setloc(void) { xxtime = localtime_r; return; }
 
-ssize_t in_fmt_timestamp(char **buffer, size_t *bufsiz, const char *format)
+ssize_t in_fmt_timestamp(char **bufptr, size_t *bufsiz, const char *format)
 {
 	time_t    ti[1];
 	struct tm tm[1];
 	(void)time(ti);
 	(void)xxtime(ti, tm);
-	return in_fmt_date(buffer, bufsiz, format, tm);
+	return in_fmt_date(bufptr, bufsiz, format, tm);
 }
 

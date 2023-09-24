@@ -45,8 +45,15 @@
 
 #include "inotify-daemon.h"
 
+#if 0
 extern const char *in_strerror(in_status_t);
+#endif
 
+#if defined(DEBUG)
+extern const char *in_strstatus(in_status_t);
+#endif
+
+#if 0
 const char *in_strerror(in_status_t status)
 {
 	static char  syserrbuf[128];
@@ -69,4 +76,27 @@ const char *in_strerror(in_status_t status)
 	}
 	return "Unknown error";
 }
+#endif
 
+#if defined(DEBUG)
+const char *in_strstatus(in_status_t status)
+{
+	static char errbuf[128];
+	switch(status)
+	{
+	case IN_ST_SYSTEM_ERROR:		return "IN_ST_SYSTEM_ERROR";
+	case IN_ST_OK:				return "IN_ST_OK";
+	case IN_ST_INTERNAL:			return "IN_ST_INTERNAL";
+	case IN_ST_SYNTAX_ERROR:		return "IN_ST_SYNTAX_ERROR";
+	case IN_ST_PREMATURE_END_OF_FILE:	return "IN_ST_PREMATURE_END_OF_FILE";
+	case IN_ST_LINE_TOO_LONG:		return "IN_ST_LINE_TOO_LONG";
+	case IN_ST_END_OF_FILE:			return "IN_ST_END_OF_FILE";
+	case IN_ST_VALUE_ERROR:			return "IN_ST_VALUE_ERROR";
+	case IN_ST_NOT_DIRECTORY:		return "IN_ST_NOT_DIRECTORY";
+	case IN_ST_NOT_FOUND:			return "IN_ST_NOT_FOUND";
+	case IN_ST_EXISTS:			return "IN_ST_EXISTS";
+	}
+	(void)snprintf(errbuf, sizeof(errbuf), "Unknown error %d", (int)status);
+	return errbuf;
+}
+#endif

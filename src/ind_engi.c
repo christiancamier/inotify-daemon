@@ -57,17 +57,19 @@ __attribute__((noreturn)) void in_engine(void)
 	do {
 		pid_t pidret = in_pidfile(pidfile, 1);
 
-		IN_CODE_DEBUG("%s", pidfile);
+		IN_CODE_DEBUG("pidfile = %s, pidret = %d", pidfile, pidret);
 
 		if((pid_t)-1 == pidret)
 		{
 			in_log_error("Problem with pidfile %s", pidfile);
+			IN_CODE_DEBUG("Exit(1)");
 			exit(1);
 		}
 
 		if((pid_t) 0 != pidret)
 		{
 			in_log_error("Another similar engine is running with pid = %d", (int)pidret);
+			IN_CODE_DEBUG("Exit(1)");
 			exit(1);
 		}
 	} while(0);
@@ -78,7 +80,7 @@ __attribute__((noreturn)) void in_engine(void)
 	while(1)
 	{
 		nfds_t nfds = (nfds_t)in_cmd_count(NULL) + 2;
-		do {
+		{
 			struct pollfd polfds[nfds];
 
 			polfds[0].fd      = evtfd;	polfds[1].fd      = sigfd;
@@ -104,27 +106,25 @@ __attribute__((noreturn)) void in_engine(void)
 				break;
 			}
 			
+			in_cmd_log(polfds + 2, (size_t)(nfds - 2));
+
 			if(POLLIN == (polfds[0].revents & POLLIN))
 			{
 				in_log_debug("New event(s)");
 				in_events_process();
-				continue;
 			}
-
-			if(0 < in_cmd_log(polfds + 2, (size_t)(nfds - 2)))
-				continue;
 
 			if(POLLIN == (polfds[1].revents & POLLIN))
 			{
 				in_log_debug("New signal(s)");
 				in_signal_process();
 			}
-		} while(0);
+		}
 	}
 
 end:
 	in_signal_terminate();
 	in_events_terminate();
-	IN_CODE_DEBUG("Exiting in_engine()");
+	IN_CODE_DEBUG("Exit(1)");
 	exit(1);
 }

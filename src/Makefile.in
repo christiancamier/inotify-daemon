@@ -50,7 +50,7 @@ MACROS =				\
 MAKE    ?= make
 SUBMAKE  = $(MAKE) -f Makefile
 CC	?= LANG=C gcc
-CFLAGS	?= -g -Wall -Wunused-variable -Werror $(MACROS)
+CFLAGS	?= -g -Wall -Wimplicit-function-declaration -Wunused-variable -Werror $(MACROS)
 
 
 CSRCS	= $(shell echo *.c)
@@ -99,7 +99,7 @@ ind_engi.o:		ind_engi.c		inotify-daemon.h ind_tunables.h ind_config.h
 ind_erro.o:		ind_erro.c		inotify-daemon.h ind_tunables.h ind_config.h
 ind_form.o:		ind_form.c		inotify-daemon.h ind_tunables.h ind_config.h
 ind_inot.o:		ind_inot.c		inotify-daemon.h ind_tunables.h ind_config.h
-ind_logg.c:		ind_logg.c		inotify-daemon.h ind_tunables.h ind_config.h
+ind_logg.o:		ind_logg.c		inotify-daemon.h ind_tunables.h ind_config.h
 ind_logg_file.o:	ind_logg_file.c		inotify-daemon.h ind_tunables.h ind_config.h
 ind_logg_syslog.o:	ind_logg_syslog.c	inotify-daemon.h ind_tunables.h ind_config.h
 ind_main.o:		ind_main.c		inotify-daemon.h ind_tunables.h ind_config.h ind_opts.h

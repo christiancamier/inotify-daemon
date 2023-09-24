@@ -105,6 +105,7 @@ in_status_t in_directory_create(const char *pathname, in_directory_t **retv)
 	case IN_ST_OK:
 		status = IN_ST_EXISTS;
 	default:		/* Intentionaly fall into */
+		IN_CODE_DEBUG("Return %s", in_strstatus(status));
 		return status;
 	}
 	
@@ -142,11 +143,11 @@ in_status_t in_directory_create(const char *pathname, in_directory_t **retv)
 
 in_status_t in_directory_getbyname(const char *pathname, in_directory_t **retv)
 {
-	in_status_t rsta;
+	in_status_t status;
 	IN_CODE_DEBUG("Entering (%s, %p)", pathname, retv);
-	rsta = getbyname(pathname, retv, NULL);
-	IN_CODE_DEBUG("Return %d", rsta);
-	return rsta;
+	status = getbyname(pathname, retv, NULL);
+	IN_CODE_DEBUG("Return %s", in_strstatus(status));
+	return status;
 }
 
 in_status_t in_directory_getbywatch(int wd, in_directory_t **retd)
@@ -154,16 +155,20 @@ in_status_t in_directory_getbywatch(int wd, in_directory_t **retd)
 	in_directory_t *ptr;
 
 	IN_CODE_DEBUG("Entering (%d, %p)", wd, retd);
+
 	for(ptr = dir_first; ptr; ptr = ptr->dir_next)
 	{
 		if(wd == ptr->dir_wd)
 		{
 			if(retd)
+			{
 				*retd = ptr;
+			}
 			IN_CODE_DEBUG("Return IN_ST_OK");
 			return IN_ST_OK;
 		}
 	}
+
 	IN_CODE_DEBUG("Return IN_ST_NOT_FOUND");
 	return IN_ST_NOT_FOUND;
 }
@@ -173,6 +178,7 @@ void in_directory_foreach(int (*callback)(in_directory_t *, void *), void *data)
 	in_directory_t *ptr;
 
 	IN_CODE_DEBUG("Entering (%p, %p)", callback, data);
+
 	for(ptr = dir_first; ptr; ptr = ptr->dir_next)
 	{
 		if(0 == callback(ptr, data))
@@ -181,6 +187,7 @@ void in_directory_foreach(int (*callback)(in_directory_t *, void *), void *data)
 			break;
 		}
 	}
+
 	IN_CODE_DEBUG("Return");
 	return;
 }

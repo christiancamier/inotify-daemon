@@ -127,7 +127,12 @@ static struct in_option options_defs[] = {
 		NULL, 0, IN_OPTARG_OPENONE,
 		"Stop daemon"),
 	IN_OPT_ENTRY(
-		'T', 'T', "test",
+		's', 's', "status",
+		IN_OPTARG_NONE,
+		NULL, 0, IN_OPTARG_OPENONE,
+		"Test if daemon is running (outputs are info level)"),
+	IN_OPT_ENTRY(
+		'T', 'T', "configtest",
 		IN_OPTARG_NONE,
 		NULL, 0, IN_OPTARG_OPENONE,
 		"Do not run, just test configuration file"),
@@ -139,9 +144,8 @@ static struct in_option options_defs[] = {
 };
 
 static unsigned int cliopts = 0;
-static char pid_file [MAXPATHLEN + 1];
-static char conf_file[MAXPATHLEN + 1];
-
+static char        pid_file [MAXPATHLEN + 1];
+static char        conf_file[MAXPATHLEN + 1];
 static const char *logdriver = "default";
 
 static jmp_buf ind_jmp_env;
@@ -180,16 +184,16 @@ static void paths_init(const char *name)
 	else
 		nptr += 1;
 
-	(void)in_fmt_string(&pptr, &psiz, _PATH_VARRUN);
-	(void)in_fmt_string(&pptr, &psiz, nptr);
-	(void)in_fmt_string(&pptr, &psiz, ".pid");
+	in_fmt_string(&pptr, &psiz, _PATH_VARRUN);
+	in_fmt_string(&pptr, &psiz, nptr);
+	in_fmt_string(&pptr, &psiz, ".pid");
 	*pptr = '\0';
 
 	pptr = conf_file;
-	(void)in_fmt_string(&pptr, &psiz, SYSCONFDIR);
-	(void)in_fmt_string(&pptr, &psiz, "/");
-	(void)in_fmt_string(&pptr, &psiz, nptr);
-	(void)in_fmt_string(&pptr, &psiz, ".conf");
+	in_fmt_string(&pptr, &psiz, SYSCONFDIR);
+	in_fmt_string(&pptr, &psiz, "/");
+	in_fmt_string(&pptr, &psiz, nptr);
+	in_fmt_string(&pptr, &psiz, ".conf");
 	*pptr = '\0';
 
 	(void)in_set_pidfile(pid_file);
@@ -229,27 +233,49 @@ static int idf_callback(in_directory_t *dir, void *dat)
 	return 1;
 }
 
-static int signal_daemon(int signal)
+static int inform_daemon_for_action(int action)
 {
-	pid_t running_pid = in_pidfile(in_get_pidfile(), 0);
-	if(0 == running_pid)
-		goto nodaemon;
+	pid_t           dmnpid;
+	int             signum;
+	int             retval;
+	in_log_level_t  loglvl;
 
-	if(-1 == kill(running_pid, signal))
+	IN_CODE_DEBUG("Entering (%d (%c))", action, action);
+
+	retval = 0;
+	dmnpid = in_pidfile(in_get_pidfile(), 0);
+
+	if(0 != dmnpid)
 	{
-		if(ESRCH == errno)
-			goto nodaemon;
-		in_log_perror("daemon");
-		return 1;
+		switch(action)
+		{
+		case 'R':	signum = SIGUSR1;	loglvl = IN_LOG_ERR;	break;
+		case 'S':	signum = SIGTERM;	loglvl = IN_LOG_ERR;	break;
+		default:	signum = 0;		loglvl = IN_LOG_INFO;	break;
+		}
+		if(-1 == kill(dmnpid, signum))
+		{
+			if(ESRCH == errno)
+			{
+				in_log_log(loglvl, "Daemon id not running");
+			}
+			else
+			{
+				in_log_perror("daemon");
+			}
+			retval = 1;
+		}
 	}
-	return 0;
-nodaemon:
-	in_log_error("There is no running daemon");
-	return 1;
+	else
+	{
+		loglvl = 's' == action ? IN_LOG_INFO : IN_LOG_ERR;
+		in_log_log(loglvl, "Daemon id not running");
+		retval = 1;
+	}
+		
+	IN_CODE_DEBUG("Return %s", retval);
+	return retval;
 }
-
-static int do_reload(void) { return signal_daemon(SIGUSR1); }
-static int do_stop  (void) { return signal_daemon(SIGTERM); }
 
 void in_reread_configuration(void)
 {
@@ -263,7 +289,6 @@ int main(int argc, char **argv)
 {
 	int foreground = 0;
 	int action     = 0;
-	int running    = 0;
 
 	IN_CODE_DEBUG("Entering (%d, %p)", argc, argv);
 
@@ -272,7 +297,7 @@ int main(int argc, char **argv)
 
 	in_opts_prepare(*argv, VERSION, usage, version, options_defs, IN_ARRAY_COUNT(options_defs));
 	argc -= 1, argv += 1;
-	do {
+	{
 		char *aa;
 		int   to;
 
@@ -282,12 +307,18 @@ int main(int argc, char **argv)
 			switch(to)
 			{
 			case 'C':
-				do {
+				if(strlen(aa) > MAXPATHLEN)
+				{
+					in_log_error("%s: File name too long\n", aa);
+					IN_CODE_DEBUG("Exit(1)");
+					exit(1);
+				}
+				{
 					size_t  cfsiz = sizeof(conf_file) - 1;
 					char   *cfpos = conf_file;
 					(void)in_fmt_string(&cfpos, &cfsiz, aa);
 					*cfpos = '\0';
-				} while(0);
+				}
 				break;
 			case 'f':
 				foreground = 1;
@@ -296,29 +327,34 @@ int main(int argc, char **argv)
 				if(IN_LOG_OK != in_log_driver_exists(aa))
 				{
 					in_log_error("Unknown logging driver `%s'\n", aa);
+					IN_CODE_DEBUG("Exit(1)");
 					exit(1);
 				}
 				logdriver = (const char *)aa;
 				cliopts |= CL_OPT_LOGDRV;
 				break;
 			case 'l':
-				do {
+				;
+				{
 					in_log_level_t lvl;
 					if((in_log_level_t)-1 == (lvl = in_log_level_by_name(aa)))
 					{
 						in_log_error("Unknown logging level `%s'\n", aa);
+						IN_CODE_DEBUG("Exit(1)");
 						exit(1);
 					}
 					(void)in_log_set_level(lvl);
-				} while(0);
+				}
 				cliopts |= CL_OPT_LOGLVL;
 				break;
 			case 'o':
-				do {
+				;
+				{
 					char *p = strrchr(aa, '=');
 					if(!p || p == aa)
 					{
 						in_log_error("Bad logging option format `%s'\n", aa);
+						IN_CODE_DEBUG("Exit(1)");
 						exit(1);
 					}
 					*(p - 1) = '\0';
@@ -326,42 +362,106 @@ int main(int argc, char **argv)
 					{
 					case IN_LOG_BADOPTION:
 						in_log_error("Bad logging `%s' does not have the option `%s'\n", logdriver, aa);
+						IN_CODE_DEBUG("Exit(1)");
 						exit(1);
 					case IN_LOG_BADOPTVAL:
 						in_log_error("Bad logging `%s' bas option `%s' value `%s'\n", logdriver, aa, p);
+						IN_CODE_DEBUG("Exit(1)");
 						exit(1);
 					case IN_LOG_BADDRIVER:
-						IN_CODE_DEBUG("INTERNAL ERRROR -- unknown driver `%s'", logdriver);
+						in_log_error("INTERNAL ERRROR -- unknown driver `%s'", logdriver);
+						IN_CODE_DEBUG("Exit(1)");
 						exit(1);
 					}
-				} while(0);
+				} 
 				cliopts |= CL_OPT_LOGOPT;
 				break;
 			case 'p':
 				if(in_set_pidfile(aa))
+				{
+					IN_CODE_DEBUG("Exit(1)");
 					exit(1);
+				}
 				cliopts |= CL_OPT_PIDFILE;
 				(void)strcpy(pid_file, aa);
 				break;
-			case 'R':
-				action = 'R';
-				break;
-			case 'S':
-				action = 'S';
-				break;
-			case 'T':
-				action = 'T';
+			case 'R': /* Intentionaly fall into */
+			case 'S': /* Intentionaly fall into */
+			case 'T': /* Intentionaly fall into */
+			case 't': /* Intentionaly fall into */
+				action = to;
 				break;
 			default:
 				in_opts_usage(200);
 				break;
 			}
 		}
-	} while(0);
+	}
 
-	if(!action)
+	if(0 != action)
 	{
-		in_log_set_driver(logdriver);
+		int rts = 0;
+		switch(action)
+		{
+		case 'R':
+		case 'S':	/* Intentionaly fall into */
+		case 's':	/* Intentionaly fall into */
+			rts = inform_daemon_for_action(action);
+			break;
+		case 'T':
+			if(IN_ST_OK == in_configuration_read(conf_file, CL_OPT_ALL))
+			{
+				in_log_info("configuration ok");
+				rts = 0;
+			}
+			else
+			{
+				in_log_error("There are configurations error");
+				rts = 1;
+			}
+		}
+		IN_CODE_DEBUG("Exit(%d)", rts);
+		exit(rts);
+	}
+
+	if(foreground)
+	{
+		in_log_notice("Running foreground");
+	}
+	else
+	{
+		pid_t pid = in_forcefork(10);
+#if defined(DEBUG)
+		pid_t pgr;
+#endif
+		switch(pid)
+		{
+		case -1:
+			in_log_perror("main/fork");
+			in_log_error("Cannot daemonize");
+			IN_CODE_DEBUG("Exit(1)");
+			exit(1);
+		case  0:
+#if defined(DEBUG)
+			pgr = setpgrp();
+#else
+			(void)setpgrp();
+#endif			
+			IN_CODE_DEBUG("New process group : %d", pgr);
+			break;
+		default:
+			in_log_info("Daemon started with pid = %d", pid);
+			sleep(1);
+			IN_CODE_DEBUG("Child launched, Exit(0)");
+			exit(0);
+		}
+	}
+
+	if(IN_LOG_BADDRIVER == in_log_set_driver(logdriver))
+	{
+		in_log_error("Bad log driver `%s'", logdriver);
+		IN_CODE_DEBUG("Exit(1)");
+		exit(1);
 	}
 
 	if(setjmp(ind_jmp_env))
@@ -372,10 +472,11 @@ int main(int argc, char **argv)
 	in_signal_terminate();
 	in_events_terminate();
 
-	if(IN_ST_OK != in_configuration_read(conf_file, 'T' == action ? CL_OPT_ALL : cliopts))
+	if(IN_ST_OK != in_configuration_read(conf_file, cliopts))
 	{
 		in_log_error("Configuration error");
-		return 1;
+		IN_CODE_DEBUG("Exit(1)");
+		exit(1);
 	}
 
 	if(IN_LOG_DEBUG == in_log_set_level(IN_LOG_GET))
@@ -384,44 +485,27 @@ int main(int argc, char **argv)
 		in_directory_foreach(idf_callback, NULL);
 	}
 
-	if(action)
-	{
-		int rts = 0;
-		switch(action)
-		{
-		case 'R':	rts = do_reload();			break;
-		case 'S':	rts = do_stop  ();			break;
-		case 'T':	in_log_info("Configuration OK");	break;
-		}
-		return rts;
-	}
 
-	if(foreground || running)
 	{
-		if(foreground)
-			in_log_info("Running foreground");
-		in_engine();
-	}
-	else
-	{
-		pid_t pid = in_forcefork(10);
-		switch(pid)
+		pid_t pidret = in_pidfile(pid_file, 1);
+
+		IN_CODE_DEBUG("pidfile = %s, pidret = %d", pid_file, pidret);
+
+		if((pid_t)-1 == pidret)
 		{
-		case -1:
-			in_log_perror("main/fork");
-			in_log_error("Cannot daemonize");
-			return 1;
-		case  0:
-			running = 1;
-			(void)setpgrp();
-			in_engine();
-			break;
-		default:
-			in_log_info("Daemon started with pid = %d", pid);
-			sleep(1);
-			break;
+			in_log_error("Problem with pidfile %s", pid_file);
+			IN_CODE_DEBUG("Exit(1)");
+			exit(1);
+		}
+
+		if((pid_t) 0 != pidret)
+		{
+			in_log_error("Another similar engine is running with pid = %d", (int)pidret);
+			IN_CODE_DEBUG("Exit(1)");
+			exit(1);
 		}
 	}
-
+	
+	in_engine();
 	return 0;
 }
